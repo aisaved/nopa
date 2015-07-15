@@ -1,10 +1,4 @@
-
-CREATE TABLE country(
-       country_id serial PRIMARY KEY,
-       country_name VARCHAR (255) UNIQUE NOT NULL,
-       country_code VARCHAR (5) UNIQUE NOT NULL);
-
-
+/*user tables*/
 CREATE TABLE user_account(
        user_account_id serial PRIMARY KEY,
        username VARCHAR (355) UNIQUE NOT NULL,
@@ -64,43 +58,7 @@ CREATE TABLE user_password_reset(
        );
 
 
-CREATE TABLE site_settings(
-       site_settings_id serial PRIMARY KEY,
-       active BOOLEAN NOT NULL DEFAULT false,
-       site_name VARCHAR (255) NOT NULL,
-       site_domain_name VARCHAR (1024) UNIQUE NOT NULL,
-       site_link VARCHAR(1024),
-       site_email VARCHAR(255),
-       site_phone VARCHAR (50),
-       enable_email BOOLEAN NOT NULL DEFAULT true,
-       mail_host VARCHAR (255),
-       mail_user VARCHAR (255),
-       mail_password VARCHAR (255),
-       mail_port integer,
-       mail_ssl BOOLEAN NOT NULL DEFAULT false,
-       mail_api_url VARCHAR (255),
-       mail_option VARCHAR (10),
-       template_folder VARCHAR (255),
-       facebook_client_id VARCHAR(100)
-       );
-
-
-
-CREATE TABLE page(
-       page_id serial PRIMARY KEY,
-       page_title VARCHAR (1024) NOT NULL,
-       page_content text,
-       page_content_html text,
-       page_meta_keywords VARCHAR (255),
-       page_meta_description text,
-       page_url VARCHAR (2048),
-       site_settings_id integer NOT NULL,
-       page_active BOOLEAN NOT NULL DEFAULT true,
-       page_template VARCHAR (255) NOT NULL,
-       CONSTRAINT page_site_settings_id_fkey FOREIGN KEY (site_settings_id)
-       REFERENCES site_settings (site_settings_id) MATCH SIMPLE 
-       ON DELETE CASCADE
-       );
-CREATE INDEX page_url_index on page (page_url);
-
+/*symbols*/
+CREATE TABLE symbols (symbol_id serial PRIMARY KEY, symbol varchar(20),  name varchar(100), sector varchar(250), industry varchar(250), market_cap decimal (16,2));
+CREATE INDEX symbol_name_index ON symbols(symbol);
 

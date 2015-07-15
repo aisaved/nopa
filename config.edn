@@ -4,4 +4,5 @@
    :user "centipair"
    :password "c3nt1p@1r"}
   :cassandra
-  {:cluster ["127.0.0.1"]}}}
+  {:cluster ["127.0.0.1"]
+   :keyspace "accrue"}}}

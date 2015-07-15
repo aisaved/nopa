@@ -28,7 +28,8 @@
                  [liberator "0.12.2"]
                  [crypto-password "0.1.3"]
                  [buddy/buddy-auth "0.5.3"]
-                 [slugger "1.0.1"]
+                 ;;[slugger "1.0.1"]
+                 [clojurewerkz/cassaforte "2.0.0"]
                  
                  [org.clojure/clojurescript "0.0-3308" :scope "provided"]
                  [org.clojure/tools.reader "0.9.2"]

@@ -26,6 +26,4 @@
     (get-in config-data [:db :cassandra])))
 
 
-(defonce cassandara-cluster (load-cassandra-config))
-
-
+(defonce cassandra-config (load-cassandra-config))
