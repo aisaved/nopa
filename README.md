@@ -1,4 +1,4 @@
-# centipair
+# Accrue
 
 FIXME
 
@@ -12,7 +12,14 @@ You will need [Leiningen][1] 2.0 or above installed.
 
 To start a web server for the application, run:
 
-    lein ring server
+    lein run
+
+To start clojurescript development, run:
+
+    lein figwheel app-admin
+    lein figwheel app
+
+Refer clojurescript profiles in project.clj
 
 ## License
 
