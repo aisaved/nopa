@@ -28,7 +28,7 @@
                  [liberator "0.12.2"]
                  [crypto-password "0.1.3"]
                  [buddy/buddy-auth "0.5.3"]
-                 [clojurewerkz/cassaforte "2.0.0"]
+                 [slugger "1.0.1"]
                  
                  [org.clojure/clojurescript "0.0-3308" :scope "provided"]
                  [org.clojure/tools.reader "0.9.2"]
@@ -40,6 +40,7 @@
                  [secretary "1.2.3"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [cljs-ajax "0.3.13"]
+                 [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
                  [org.immutant/web "2.0.2"]]
 
   :min-lein-version "2.0.0"
