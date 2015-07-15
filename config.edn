@@ -1,3 +1,7 @@
-{:db-name "projects"
- :db-user "centipair"
- :db-password "c3nt1p@1r"}
+{:db 
+ {:sql
+  {:db "projects"
+   :user "centipair"
+   :password "c3nt1p@1r"}
+  :cassandra
+  {:cluster ["127.0.0.1"]}}}

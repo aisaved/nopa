@@ -17,3 +17,4 @@ resources/public/cljs/
 .nrepl-port
 deploy.sh
 resources/public/uploads/
+config.edn

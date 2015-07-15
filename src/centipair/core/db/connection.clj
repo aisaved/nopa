@@ -4,5 +4,5 @@
 
 
 
-(defdb db (postgres config/db-config))
+(defdb db (postgres config/sql-db-config))
 

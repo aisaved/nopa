@@ -2,17 +2,30 @@
   (:require [clojure.edn :as edn]))
 
 
+(defn get-config
+  []
+  (clojure.edn/read-string (slurp "config.edn")))
 
-(defn load-db-config
+
+(defn load-sql-db-config
   "Loads db config from congif.edn file in classpath
   keys: :db-name :db-username :db-password
   "
   []
-  (let [db-details (clojure.edn/read-string (slurp "config.edn"))]
-    {:db (:db-name db-details)
-     :user (:db-user db-details)
-     :password (:db-password db-details)}))
+  (let [config-data (get-config)]
+    (get-in config-data [:db :sql])))
 
 
-;;db config
-(defonce db-config (load-db-config))
+;;sql db config
+(defonce sql-db-config (load-sql-db-config))
+
+
+(defn load-cassandra-config
+  []
+  (let [config-data (get-config)]
+    (get-in config-data [:db :cassandra])))
+
+
+(defonce cassandara-cluster (load-cassandra-config))
+
+

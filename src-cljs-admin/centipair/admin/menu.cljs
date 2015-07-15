@@ -12,7 +12,7 @@
 
 (def admin-menu (reagent/atom 
                  [{:label "Dashboard" :url "/dashboard" :id "dashboard" :active false}
-                  {:label "Chartist" :url "/chartist" :id "chartist" :active false }
+                  {:label "Analytics" :url "/analytics" :id "analytics" :active false }
                   {:label "Screening" :url "/screening" :id "screening" :active false }]))
 
 
@@ -78,12 +78,19 @@
   (activate-side-menu-item "dashboard")
   (js/console.log "dashboard"))
 
+
+(defroute analytics "/analytics" []
+  (activate-side-menu-item "analytics")
+  (js/console.log "analytics"))
+
+
+(defroute screening "/screening" []
+  (activate-side-menu-item "screeing")
+  (js/console.log "screening"))
   
 
 ;; Quick and dirty history configuration.
 (let [h (History.)]
   (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
   (doto h (.setEnabled true)))
-
- 
 
