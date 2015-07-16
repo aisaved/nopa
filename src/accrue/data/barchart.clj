@@ -1,8 +1,8 @@
 (ns accrue.data.barchart
-  (:use centipair.core.db.connection
-        accrue.db.models
-        accrue.util)
-  (:require [clojurewerkz.cassaforte.cql :as cql]
+  (:use 
+        accrue.data.models)
+  (:require [centipair.core.db.connection :as conn]
+            [clojurewerkz.cassaforte.cql :as cql]
             [clojurewerkz.cassaforte.query :as query]
             [org.httpkit.client :as http]
             [clojure.data.json :as json]
@@ -10,7 +10,7 @@
             [accrue.data.symbols :as symbols]))
 
 
-(def barchart-ohlc-table "barchart_ohlc")
+(def barchart-ohlc-table "ohlc")
 
 (def barchart-api-key "026368620175b407e3a5907138ffe427")
 (def barchart-url "http://ondemand.websol.barchart.com/getHistory.json")
@@ -39,7 +39,7 @@
   "Saves barchart ohlc to accrue db"
   [barchart-ohlc-results params]
   (doseq [barchart-ohlc barchart-ohlc-results]
-    (cql/insert conn barchart-ohlc-table (barchart-accrue-ohlc barchart-ohlc params))))
+    (cql/insert (conn/dbcon) barchart-ohlc-table (barchart-accrue-ohlc barchart-ohlc params))))
 
 
 (defn get-options
@@ -58,8 +58,8 @@
       (println (str "Something wrong-> status code: " (:status @api-response))))))
 
 (defn select-barchart-data [partition-keys]
-  (cql/select conn barchart-ohlc-table (query/where 
-                          :ohlc_id [:in partition-keys])))
+  (cql/select (conn/dbcon) barchart-ohlc-table (query/where 
+                                      :ohlc_id [:in partition-keys])))
 
 
 (defn start-barchart-scheduling

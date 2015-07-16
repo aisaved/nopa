@@ -2,7 +2,7 @@
   (:use 
    clojure.java.io
    korma.core
-   accrue.db.connect)
+   centipair.core.db.connection)
   (:require [clojure.data.csv :as csv]))
 
 
