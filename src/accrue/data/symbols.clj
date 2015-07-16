@@ -1,9 +1,18 @@
 (ns accrue.data.symbols
   (:use 
    clojure.java.io
-   korma.core
    centipair.core.db.connection)
-  (:require [clojure.data.csv :as csv]))
+  (:require [clojure.data.csv :as csv]
+            [korma.core :as korma :refer [insert
+                                          delete
+                                          select
+                                          where
+                                          set-fields
+                                          values
+                                          fields
+                                          offset
+                                          limit
+                                          defentity]]))
 
 
 (defentity symbols)
