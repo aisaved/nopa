@@ -1,10 +1,10 @@
 (ns accrue.data.models
-  (:use centipair.core.db.connection
-        clojurewerkz.cassaforte.cql
-        clojurewerkz.cassaforte.query
+  (:use clojurewerkz.cassaforte.query
         clojurewerkz.cassaforte.uuids
         [cheshire.core :refer :all])
-  (:require [clj-time.core :as t]
+  (:require [clojurewerkz.cassaforte.cql :as cql]
+            [centipair.core.db.connection :as conn]
+            [clj-time.core :as t]
             [clj-time.coerce :as c]))
 
 
@@ -14,7 +14,7 @@
                              :ohlc "barchart_ohlc"}
                   :iqfeed {:symbols "iqfeed_symbols"
                            :ohlc "iqfeed_ohlc"}})
-
+(def ohlc-table "ohlc")
 
 (def intervals {:seconds 1
                 :minutes 60 ;;sixty seconds
@@ -48,26 +48,32 @@
 (defn get-symbols
   "Get symbols from the given data source"
   [source]
-  (map #(% :symbol) (select conn (:symbols ((keyword source) data-source)))))
+  (map #(% :symbol) (cql/select (conn/dbcon) (:symbols ((keyword source) data-source)))))
+
 
 (defn highchart-ohlc-format 
   [ohlc]
-  [(c/to-long (:time ohlc)) (:open ohlc) (:high ohlc) (:low ohlc) (:close ohlc)]
-  )
+  [(c/to-long (:time ohlc)) (:open ohlc) (:high ohlc) (:low ohlc) (:close ohlc)])
 
-(defn accrue-ohlc-format [ohlc]
-  {:time (c/to-long (:time ohlc)) :open (:open ohlc) :high (:high ohlc) :low (:low ohlc) :close (:close ohlc)}
-  )
+
+(defn accrue-ohlc-format
+  [ohlc]
+  {:time (c/to-long (:time ohlc)) :open (:open ohlc) :high (:high ohlc) :low (:low ohlc) :close (:close ohlc)})
 
 (defn highcharts-ohlc-js
   "converts from db format to highcharts data format"
   [results]
   (into [] (map highchart-ohlc-format results)))
 
-(defn get-ohlc 
-  [partition-keys start-date end-date source]
-  (let [table (:ohlc ((keyword source) data-source))]
-    (select conn table (where 
-                        :ohlc_id [:in partition-keys]
-                        :time [> (c/to-sql-time start-date)]
-                        :time [<= (c/to-sql-time end-date)]))))
+(defn get-ohlc
+  "Partition keys are of format: symbol-intervalseconds-year
+  EG: AAPL-86400-2015
+  start-date/end-date standard date format"
+  [partition-keys start-date end-date]
+  (cql/select (conn/dbcon) ohlc-table
+              (where
+               :ohlc_id [:in partition-keys]
+               :time [> (c/to-sql-time start-date)]
+               :time [<= (c/to-sql-time end-date)])))
+
+

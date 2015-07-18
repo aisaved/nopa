@@ -3,13 +3,13 @@
             [centipair.routes.home :refer [home-routes]]
             [centipair.core.auth.user.routes :refer [user-routes]]
             [centipair.core.auth.user.api :refer [api-user-routes]]
-            [centipair.core.init :as core-init]
+            [centipair.core.init :as init]
 
             [centipair.middleware :as middleware]
             [centipair.session :as session]
             [compojure.route :as route]
             [taoensso.timbre :as timbre]
-            [taoensso.timbre.appenders.rotor :as rotor]
+            [taoensso.timbre.appenders.3rd-party.rotor :as rotor]
             [selmer.parser :as parser]
             [environ.core :refer [env]]
             [clojure.tools.nrepl.server :as nrepl]))
@@ -20,12 +20,22 @@
            (route/resources "/")
            (route/not-found "Not Found"))
 
+(defn parse-port [port]
+  (when port
+    (cond
+      (string? port) (Integer/parseInt port)
+      (number? port) port
+      :else          (throw (Exception. (str "invalid port value: " port))))))
+
 (defn start-nrepl
-  "Start a network repl for debugging when the :repl-port is set in the environment."
+  "Start a network repl for debugging when the :nrepl-port is set in the environment."
   []
-  (when-let [port (env :repl-port)]
+  (when-let [port (env :nrepl-port)]
     (try
-      (reset! nrepl-server (nrepl/start-server :port port))
+      (->> port
+           (parse-port)
+           (nrepl/start-server :port)
+           (reset! nrepl-server))
       (timbre/info "nREPL server started on port" port)
       (catch Throwable t
         (timbre/error "failed to start nREPL" t)))))
@@ -41,25 +51,20 @@
    put any initialization code here"
   []
 
-  (timbre/set-config!
-    [:appenders :rotor]
-    {:min-level             (if (env :dev) :trace :info)
-     :enabled?              true
-     :async?                false ; should be always false for rotor
-     :max-message-per-msecs nil
-     :fn                    rotor/appender-fn})
-
-  (timbre/set-config!
-    [:shared-appender-config :rotor]
-    {:path "centipair.log" :max-size (* 512 1024) :backlog 10})
+  (timbre/merge-config!
+    {:level     (if (env :dev) :trace :info)
+     :appenders {:rotor (rotor/rotor-appender
+                          {:path "centipair.log"
+                           :max-size (* 512 1024)
+                           :backlog 10})}})
 
   (if (env :dev) (parser/cache-off!))
   (start-nrepl)
   ;;start the expired session cleanup job
   (session/start-cleanup-job!)
-  (core-init/init-system)
+  (init/init-system)
   (timbre/info (str
-                 "\n-=[centipair started successfully"
+                 "\n-=[accrue started successfully"
                  (when (env :dev) "using the development profile")
                  "]=-")))
 
@@ -67,14 +72,16 @@
   "destroy will be called when your application
    shuts down, put any clean up code here"
   []
-  (timbre/info "centipair is shutting down...")
+  (timbre/info "accrue is shutting down...")
   (stop-nrepl)
   (timbre/info "shutdown complete!"))
 
-(def app
-  (-> (routes
-       (wrap-routes #'user-routes middleware/wrap-csrf)
-       (wrap-routes #'api-user-routes middleware/wrap-csrf)
-       (wrap-routes #'home-routes middleware/wrap-csrf)
-       #'base-routes)
-      middleware/wrap-base))
+(def app-base
+  (routes
+    (wrap-routes #'home-routes middleware/wrap-csrf)
+    (wrap-routes #'api-user-routes middleware/wrap-csrf)
+    (wrap-routes #'user-routes middleware/wrap-csrf)
+    (wrap-routes #'home-routes middleware/wrap-csrf)
+    #'base-routes))
+
+(def app (middleware/wrap-base #'app-base))

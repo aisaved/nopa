@@ -1,6 +1,5 @@
 (ns accrue.data.barchart
-  (:use 
-        accrue.data.models)
+  (:use accrue.data.models)
   (:require [centipair.core.db.connection :as conn]
             [clojurewerkz.cassaforte.cql :as cql]
             [clojurewerkz.cassaforte.query :as query]
@@ -32,8 +31,7 @@
      :volume (Integer. (:volume barchart-ohlc))
      :time (c/to-sql-time (:timestamp barchart-ohlc))
      :interval standard-interval
-     }
-    ))
+     }))
 
 (defn cql-insert-ohlc
   "Saves barchart ohlc to accrue db"
