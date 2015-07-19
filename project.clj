@@ -31,6 +31,7 @@
                  [crypto-password "0.1.3"]
                  [buddy/buddy-auth "0.5.3"]                 
                  [org.immutant/web "2.0.2"]
+                 [clj-time "0.10.0"]
                  [org.clojure/tools.reader "0.9.2"]
                  [org.clojure/clojurescript "0.0-3308" :scope "provided"]
                  [org.clojure/tools.reader "0.9.2"]

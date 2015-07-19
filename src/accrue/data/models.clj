@@ -2,10 +2,9 @@
   (:use clojurewerkz.cassaforte.query
         clojurewerkz.cassaforte.uuids
         [cheshire.core :refer :all])
-  (:require [clojurewerkz.cassaforte.cql :as cql]
-            [centipair.core.db.connection :as conn]
-            [clj-time.core :as t]
-            [clj-time.coerce :as c]))
+  (:require [accrue.utilities.time :as time]
+            [clojurewerkz.cassaforte.cql :as cql]
+            [centipair.core.db.connection :as conn]))
 
 
 (def data-source {:quantumcharts {:symbols "quantum_charts_symbols"
@@ -24,16 +23,15 @@
                 :monthly (* 31 24 60 60)})
 
 
-(defn timestamp-to-year
-  "Returns the year from the given timestamp"
-  [timestamp]
-  (let [datetime (c/from-sql-date timestamp)]
-    (t/year datetime)))
+(defn past-years-key
+  "Get partition keys for past years for a symbol
+  E.G (past-years-keys \"AAPL\" \"daily\" 10)"
+  [symbol interval past-years]
+  (let [year (time/current-year)]
+    (map (fn [each]
+           (str symbol "-" ((keyword interval) intervals) "-" (- year each))) 
+         (range 1 (+ 1 past-years)))))
 
-(defn date-to-year
-  "Returns the year from the given datetime value"
-  [date]
-  (t/year date))
 
 
 (defn partition-key 
@@ -53,12 +51,12 @@
 
 (defn highchart-ohlc-format 
   [ohlc]
-  [(c/to-long (:time ohlc)) (:open ohlc) (:high ohlc) (:low ohlc) (:close ohlc)])
+  [(time/to-long (:time ohlc)) (:open ohlc) (:high ohlc) (:low ohlc) (:close ohlc)])
 
 
 (defn accrue-ohlc-format
   [ohlc]
-  {:time (c/to-long (:time ohlc)) :open (:open ohlc) :high (:high ohlc) :low (:low ohlc) :close (:close ohlc)})
+  {:time (time/to-long (:time ohlc)) :open (:open ohlc) :high (:high ohlc) :low (:low ohlc) :close (:close ohlc)})
 
 (defn highcharts-ohlc-js
   "converts from db format to highcharts data format"
@@ -73,7 +71,7 @@
   (cql/select (conn/dbcon) ohlc-table
               (where
                :ohlc_id [:in partition-keys]
-               :time [> (c/to-sql-time start-date)]
-               :time [<= (c/to-sql-time end-date)])))
+               :time [> (time/to-sql-time start-date)]
+               :time [<= (time/to-sql-time end-date)])))
 
 

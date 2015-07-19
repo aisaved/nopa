@@ -6,7 +6,8 @@
             [org.httpkit.client :as http]
             [clojure.data.json :as json]
             [clj-time.coerce :as c]
-            [accrue.data.symbols :as symbols]))
+            [accrue.data.symbols :as symbols]
+            [accrue.utilities.time :as time]))
 
 
 (def barchart-ohlc-table "ohlc")
@@ -20,7 +21,7 @@
   (let [standard-interval ((keyword (:type params)) intervals)
         key-maker {:symbol (:symbol params)
                    :interval standard-interval
-                   :year (timestamp-to-year (c/to-sql-time (:timestamp barchart-ohlc)))
+                   :year (time/timestamp-to-year (c/to-sql-time (:timestamp barchart-ohlc)))
                    }]
     {:ohlc_id (partition-key key-maker)
      :symbol (:symbol params)
@@ -29,7 +30,7 @@
      :low (:low barchart-ohlc)
      :close (:close barchart-ohlc)
      :volume (Integer. (:volume barchart-ohlc))
-     :time (c/to-sql-time (:timestamp barchart-ohlc))
+     :time (time/to-sql-time (:timestamp barchart-ohlc))
      :interval standard-interval
      }))
 

@@ -18,3 +18,4 @@ resources/public/cljs/
 deploy.sh
 resources/public/uploads/
 config.edn
+deps-tree
