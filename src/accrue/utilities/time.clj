@@ -29,6 +29,18 @@
   (t/year date))
 
 
+(defn date-to-month
+  "Returns the month from the given datetime value"
+  [date]
+  (t/month date))
+
+
+(defn date-to-day
+  "Returns the day from the given datetime value"
+  [date]
+  (t/day date))
+
+
 (defn current-year []
   "returns current year"
-  (t/year (t/now)))
+  (date-to-year (t/now)))

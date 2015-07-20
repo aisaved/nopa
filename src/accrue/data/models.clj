@@ -30,7 +30,7 @@
   (let [year (time/current-year)]
     (map (fn [each]
            (str symbol "-" ((keyword interval) intervals) "-" (- year each))) 
-         (range 1 (+ 1 past-years)))))
+         (range past-years))))
 
 
 
