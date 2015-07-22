@@ -1,4 +1,4 @@
-(ns accrue.almanac.calendar
+(ns accrue.insights.almanac.calendar
   (:require [accrue.utilities.time :as t]))
 
 
