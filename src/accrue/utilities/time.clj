@@ -16,13 +16,6 @@
   [timestamp]
   (c/to-long timestamp))
 
-(defn timestamp-to-year
-  "Returns the year from the given timestamp"
-  [timestamp]
-  (let [datetime (c/from-sql-date timestamp)]
-    (t/year datetime)))
-
-
 (defn date-to-year
   "Returns the year from the given datetime value"
   [date]
@@ -41,6 +34,29 @@
   (t/day date))
 
 
+(defn timestamp-to-year
+  "Returns the year from the given timestamp"
+  [timestamp]
+  (let [datetime (c/from-sql-date timestamp)]
+    (date-to-year datetime)))
+
+(defn timestamp-to-month
+  "Returns the year from the given timestamp"
+  [timestamp]
+  (let [datetime (c/from-sql-date timestamp)]
+    (date-to-month datetime)))
+
+(defn timestamp-to-day
+  "Returns the year from the given timestamp"
+  [timestamp]
+  (let [datetime (c/from-sql-date timestamp)]
+    (date-to-day datetime)))
+
+
 (defn current-year []
   "returns current year"
   (date-to-year (t/now)))
+
+
+(defn now []
+  (t/now))
