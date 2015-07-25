@@ -3,7 +3,8 @@
             [clojurewerkz.cassaforte.query :refer :all]
             [centipair.core.db.connection :as conn]
             [accrue.data.models :as data-model]
-            [accrue.utilities.time :as t]))
+            [accrue.utilities.time :as t]
+            [accrue.insights.almanac.calendar :as cal]))
 
 
 
@@ -54,10 +55,6 @@
 
 
 
-;;{:month 1 :day 1 :years 0 :gl-precent 4.5 :symbol "AAPL"}
-;;{:month 1 :day 2 :years 0 :gl-precent 5.5 :symbol "AAPL"}
-
-
 (defn generate-years-passed-array
   [next]
   (keep-indexed (fn [index each]
@@ -99,10 +96,55 @@
   (map n-day-pattern-aggregate data))
 
 
+(defn find-next-day-value
+  "Find next day value for a day
+  Tries for next five days."
+  [data day-key year-index tries]
+  (if (> tries 4)
+    0
+    (let [next-day-key (cal/find-next-day-key day-key)
+          next-day-value (nth (:gl-data (next-day-key data)) year-index)]
+      (if (= 0 next-day-value)
+        (find-next-day-value data next-day-key year-index (inc tries))
+        next-day-value))))
+
+
+(defn fill-data
+  "Fills in holiday data"
+  [data day-key year-index gl]
+  (if (= gl 0)
+    (find-next-day-value data day-key year-index 0)
+    gl))
+
+
+(defn check-blank-data
+  "Checks for blank data and creates new map from filled data"
+  [data new-n-day-data key-group]
+  (let [day-key (first key-group)
+        past-years-data-list (:gl-data (second key-group))
+        filled-data-array (filter
+                           #(not (= % 0))
+                           (keep-indexed (partial fill-data data day-key) past-years-data-list))
+        filled-data (assoc (day-key data) :gl-data-filled filled-data-array)
+        filled-n-day-data (assoc new-n-day-data day-key filled-data)]
+    filled-n-day-data))
+
+(defn process-n-day-blanks
+  "Process each n-day blanks"
+  [n-day-data]
+  (reduce (partial check-blank-data n-day-data)  {} n-day-data))
+
+(defn fill-holidays
+  "If a particular day is a holiday, fetch data from the next trading day"
+  [data]
+  (map process-n-day-blanks data))
+
+
 ;; This function composition detects patterns and
 ;; transforms raw ohlc data into relevant pattern data
 (def transform-data
   (comp
+   fill-holidays
    n-day-aggregate
    prepare-data))
 
@@ -118,7 +160,6 @@
               (where [[:in :ohlc_id (data-model/past-years-key symbol interval 100)]])
               ;;(limit 100)
               ))
-
 
 
 (defn process-daily-symbol
