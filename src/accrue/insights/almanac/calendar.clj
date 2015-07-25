@@ -10,12 +10,22 @@
 
 (defn generate-month-days
   [month]
-  (let [days (range 1 (+ 1 ((keyword month) month-days-number)))]
-    
-    ))
+  (let [days (range 1 (+ 1 ((keyword (str month)) month-days-number)))]
+    (for [day days]
+      (keyword (str day "-" month)))))
 
 (defn generate-all-days
   []
   (let [months (range 1 13)]
-    
-    ))
+    (reduce (fn [previous next] (concat previous next)) (map generate-month-days months))))
+
+
+(defonce all-days (generate-all-days))
+
+
+(defn find-next-day-key
+  [day-key]
+  (let [day-key-index (.indexOf all-days day-key)]
+    (if (= day-key-index 365)
+      (first all-days)
+      (nth all-days (+ day-key-index 1)))))
