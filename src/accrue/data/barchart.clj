@@ -52,7 +52,6 @@
   [params]
   (let [options (get-options params)
         api-response (http/get  barchart-url options)]
-    (println (:body @api-response))
     (if (= (:status @api-response) 200)
       (cql-insert-ohlc (:results (json/read-json (:body @api-response))) params)
       (println (str "Something wrong-> status code: " (:status @api-response))))))
