@@ -4,9 +4,19 @@
             [centipair.core.db.connection :as conn]
             [accrue.data.models :as data-model]
             [accrue.utilities.time :as t]
-            [accrue.insights.almanac.calendar :as cal]))
+            [accrue.insights.almanac.calendar :as cal]
+            [accrue.data.barchart :as barchart]
+            [accrue.math.stats :as stats]
+            ))
 
-
+(defn fetch-test-data
+  "Fetches test data using barchart api"
+  [symbol]
+  (barchart/fetch-save-ohlc {:symbol symbol
+                             :interval 1
+                             :type "daily"
+                             :maxRecords 20000
+                             :order "desc"}))
 
 (def pattern-current-year (t/current-year))
 
@@ -36,7 +46,9 @@
 
 
 (defn data-format
-  "Only first and last of data group is relevant"
+  "Only first and last of data group is relevant
+  #TODO: This a stict rule. Probably will have to find 
+  a relevant profit in next n-days"
   [data-group]
   {:gl-percent (gl-percent (:open (first data-group)) (:close (last data-group)))
    :years-passed (years-passed data-group)
@@ -96,6 +108,18 @@
   (map n-day-pattern-aggregate data))
 
 
+
+(defn find-yearly-sd
+  [percent-gain-years]
+  (map #(stats/standard-deviation (take % percent-gain-years))
+       (range 5 (count percent-gain-years))))
+
+(defn find-yearly-win-percent
+  [percent-gain-years]
+  (map #(stats/win-percent (take % percent-gain-years))
+       (range 5 (count percent-gain-years))))
+
+
 (defn find-next-day-value
   "Find next day value for a day
   Tries for next five days."
@@ -125,7 +149,10 @@
         filled-data-array (filter
                            #(not (= % 0))
                            (keep-indexed (partial fill-data data day-key) past-years-data-list))
-        filled-data (assoc (day-key data) :gl-data-filled filled-data-array)
+        filled-data (assoc (day-key data)
+                           :gl-data-filled filled-data-array
+                           :sd (find-yearly-sd filled-data-array)
+                           :win-percent (find-yearly-win-percent filled-data-array))
         filled-n-day-data (assoc new-n-day-data day-key filled-data)]
     filled-n-day-data))
 
