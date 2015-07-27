@@ -105,7 +105,7 @@
 
 (defn n-day-aggregate
   [data]
-  (map n-day-pattern-aggregate data))
+  (pmap n-day-pattern-aggregate data))
 
 
 
@@ -141,7 +141,7 @@
     gl))
 
 
-(defn check-blank-data
+(defn process-data
   "Checks for blank data and creates new map from filled data"
   [data new-n-day-data key-group]
   (let [day-key (first key-group)
@@ -151,27 +151,29 @@
                            (keep-indexed (partial fill-data data day-key) past-years-data-list))
         filled-data (assoc (day-key data)
                            :gl-data-filled filled-data-array
+                           :avg-gl (stats/average filled-data-array)
                            :sd (find-yearly-sd filled-data-array)
-                           :win-percent (find-yearly-win-percent filled-data-array))
+                           :win-percent (find-yearly-win-percent filled-data-array)
+                           )
         filled-n-day-data (assoc new-n-day-data day-key filled-data)]
     filled-n-day-data))
 
-(defn process-n-day-blanks
+(defn process-n-day-data
   "Process each n-day blanks"
   [n-day-data]
-  (reduce (partial check-blank-data n-day-data)  {} n-day-data))
+  (reduce (partial process-data n-day-data)  {} n-day-data))
 
-(defn fill-holidays
+(defn compute-save
   "If a particular day is a holiday, fetch data from the next trading day"
   [data]
-  (map process-n-day-blanks data))
+  (pmap process-n-day-data data))
 
 
 ;; This function composition detects patterns and
 ;; transforms raw ohlc data into relevant pattern data
 (def transform-data
   (comp
-   fill-holidays
+   compute-save
    n-day-aggregate
    prepare-data))
 

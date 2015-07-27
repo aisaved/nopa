@@ -24,4 +24,5 @@
 
 (defn average
   [list-data]
-  (/ (reduce + list-data) (count list-data)))
+  (with-precision 2
+   (/ (reduce + list-data) (count list-data))))
