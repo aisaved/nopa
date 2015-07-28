@@ -23,10 +23,10 @@
 (defn date-id
   "converts date to date-id format
   used as primary key in almanac table
-  date-id format:<day>-<month>-<past years>
+  date-id format:<day>-<month>-<pattern-length>
   Example : 1-07-25"
-  [date past-years]
-  (str (t/date-to-day date) "-" (t/date-to-month date) "-" past-years))
+  [date pattern-length]
+  (str (t/date-to-day date) "-" (t/date-to-month date) "-" pattern-length))
 
 (defn gl-percent
   "Calculates gain lose percentage"
@@ -56,7 +56,7 @@
    :day (t/timestamp-to-day (:time (first data-group)))
    :month (t/timestamp-to-month (:time (first data-group)))
    :pattern-length (count data-group)
-   :data [(first data-group) (last data-group)]})
+   :raw-data data-group})
 
 (defn prepare-data
   [data]
@@ -66,14 +66,14 @@
         (map data-format parted-data)))))
 
 
-
+;;-----------------Yearly gl-percent collectors------------
 (defn generate-years-passed-array
   [next]
   (keep-indexed (fn [index each]
                   (if (= index (:years-passed next))
                     (:gl-percent next)
-                    0
-                    ))(range 5 101)))
+                    0))
+                (range 5 101)))
 
 
 (defn collect-years-passed-data
@@ -87,15 +87,39 @@
   (if (nil? (key ag-data))
     (into [] (generate-years-passed-array next))
     (collect-years-passed-data key ag-data next)))
+;;-----------------Yearly gl-percent collectors------------
+
+;;---------------Raw data collectors----------------------
+(defn generate-years-passed-raw-data-array
+  [next]
+  (keep-indexed (fn [index each]
+                  (if (= index (:years-passed next))
+                    (:raw-data next)
+                    []))
+                (range 5 101)))
+
+(defn collect-years-passed-raw-data
+  [key ag-data next]
+  (let [ag-data-row (key ag-data)]
+    (assoc (:raw-data ag-data-row) (:years-passed next) (:raw-data next))))
+
+
+(defn collect-raw-data
+  [key ag-data next]
+  (if (nil? (key ag-data))
+    (into [] (generate-years-passed-raw-data-array next))
+    (collect-years-passed-raw-data key ag-data next)))
+;;---------------Raw data collectors------------------
 
 
 (defn reduce-n-day-pattern
   [ag-data next]
   (let [key (keyword (str (:day next) "-" (:month next)))]
     (assoc ag-data
-             key {:pattern-length (:pattern-length next)
-                  :symbol (:symbol next)
-                  :gl-data (collect-gl-data key ag-data next)})))
+           key {:pattern-length (:pattern-length next)
+                :symbol (:symbol next)
+                :gl-data (collect-gl-data key ag-data next)
+                :raw-data (collect-raw-data key ag-data next)})))
 
 
 (defn n-day-pattern-aggregate
@@ -141,20 +165,46 @@
     gl))
 
 
+
+(defn find-next-day-raw-data
+  "Find next day raw data for a day
+  Tries for next five days."
+  [data day-key year-index tries]
+  (if (> tries 4)
+    []
+    (let [next-day-key (cal/find-next-day-key day-key)
+          next-day-value (nth (:raw-data (next-day-key data)) year-index)]
+      (if (empty? next-day-value)
+        (find-next-day-raw-data data next-day-key year-index (inc tries))
+        next-day-value))))
+
+
+(defn fill-raw-data
+  [data day-key year-index raw-data]
+  (if (empty? raw-data)
+    (find-next-day-raw-data data day-key year-index 0)
+    raw-data))
+ 
+
+
 (defn process-data
   "Checks for blank data and creates new map from filled data"
   [data new-n-day-data key-group]
   (let [day-key (first key-group)
         past-years-data-list (:gl-data (second key-group))
+        past-years-raw-data-list (:raw-data (second key-group))
         filled-data-array (filter
                            #(not (= % 0))
                            (keep-indexed (partial fill-data data day-key) past-years-data-list))
+        filled-raw-data-array (filter
+                               #(not (empty? %))
+                               (keep-indexed (partial fill-raw-data data day-key) past-years-raw-data-list))
         filled-data (assoc (day-key data)
                            :gl-data-filled filled-data-array
+                           :raw-data-filled filled-raw-data-array
                            :avg-gl (stats/average filled-data-array)
                            :sd (find-yearly-sd filled-data-array)
-                           :win-percent (find-yearly-win-percent filled-data-array)
-                           )
+                           :win-percent (find-yearly-win-percent filled-data-array))
         filled-n-day-data (assoc new-n-day-data day-key filled-data)]
     filled-n-day-data))
 
