@@ -74,4 +74,9 @@
                :time [> (time/to-sql-time start-date)]
                :time [<= (time/to-sql-time end-date)])))
 
+(defn get-history-data
+  [symbol interval]
+  (cql/select (conn/dbcon)
+              ohlc-table
+              (where [[:in :ohlc_id (past-years-key symbol interval 100)]])))
 
