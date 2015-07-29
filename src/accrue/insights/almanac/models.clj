@@ -1,11 +1,10 @@
 (ns accrue.insights.almanac.models
-  (:require 
-            [clojurewerkz.cassaforte.query :refer :all]
+  (:require [clojurewerkz.cassaforte.query :refer :all]
             [centipair.core.db.connection :as conn]
-            [accrue.utilities.time :as t]
-            ))
+            [clojurewerkz.cassaforte.cql :as cql]
+            [accrue.utilities.time :as t]))
 
-
+(def almanac-daily-table "almanac_daily")
 
 (defn date-id-time
   "converts date to date-id format
@@ -33,11 +32,12 @@
 
 (defn save-data
   [day-key n-day-pattern]
-  (let [date-id (partition-key day-key (:pattern-length n-day-pattern))]
-    (into {} 
-          [{:date-id date-id
-            :symbol (:symbol n-day-pattern)}
-           (generate-n-years-map "gl_percent" (:avg-gl-percent n-day-pattern))
-           (generate-n-years-map "sd" (:sd n-day-pattern))
-           (generate-n-years-map "accuracy_range" (:win-percent n-day-pattern))
-           ])))
+  (let [date-id (partition-key day-key (:pattern-length n-day-pattern))
+        params (into {}
+                     [{:date_id date-id
+                       :symbol (:symbol n-day-pattern)}
+                      (generate-n-years-map "gl_percent" (:avg-gl-percent n-day-pattern))
+                      (generate-n-years-map "sd" (:sd n-day-pattern))
+                      (generate-n-years-map "accuracy_range" (:win-percent n-day-pattern))
+                      ])]
+    (cql/insert (conn/dbcon) almanac-daily-table params)))
