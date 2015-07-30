@@ -1,1 +1,1 @@
-(ns accrue.insights.alamanc.api)
+(ns accrue.insights.almanac.api)

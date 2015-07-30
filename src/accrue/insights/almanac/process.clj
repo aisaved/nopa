@@ -4,6 +4,8 @@
             [accrue.insights.almanac.calendar :as cal]
             [accrue.data.barchart :as barchart]
             [accrue.math.stats :as stats]
+            [accrue.data.symbols :as symbols]
+            [accrue.insights.almanac.models :as almanac-models]
             ))
 
 (defn fetch-test-data
@@ -122,7 +124,7 @@
 
 (defn n-day-aggregate
   [data]
-  (pmap n-day-pattern-aggregate data))
+  (map n-day-pattern-aggregate data))
 
 
 
@@ -185,7 +187,6 @@
     raw-data))
  
 
-
 (defn process-data
   "Checks for blank data and creates new map from filled data"
   [data new-n-day-data key-group]
@@ -206,17 +207,20 @@
                            :sd (find-yearly-sd filled-data-array)
                            :win-percent (find-yearly-win-percent filled-data-array))
         filled-n-day-data (assoc new-n-day-data day-key filled-data)]
+    (almanac-models/save-data day-key filled-data)
     filled-n-day-data))
+
 
 (defn process-n-day-data
   "Process each n-day blanks"
   [n-day-data]
   (reduce (partial process-data n-day-data)  {} n-day-data))
 
+
 (defn compute-save
   "If a particular day is a holiday, fetch data from the next trading day"
   [data]
-  (pmap process-n-day-data data))
+  (doall (map process-n-day-data data)))
 
 
 ;; This function composition detects patterns and
@@ -231,11 +235,14 @@
 ;;Data transformations for partitioned data ends
 
 
-
-
-
 (defn process-daily-symbol
   "Processing each symbol"
   [symbol]
   (let [data (sort-by #(:time %) (data-model/get-history-data symbol "daily"))]
     (transform-data data)))
+
+
+
+(defn process-all-symbols
+  []
+  (pmap process-daily-symbol ["MCR" "NFLX" "AAPL" "IBM" "MSFT" "FB"]))
