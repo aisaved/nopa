@@ -80,3 +80,7 @@
               ohlc-table
               (where [[:in :ohlc_id (past-years-key symbol interval 100)]])))
 
+
+(defn save-ohlc
+  [accrue-ohlc]
+  (cql/insert (conn/dbcon) ohlc-table accrue-ohlc))

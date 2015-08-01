@@ -7,7 +7,9 @@
             [clojure.data.json :as json]
             [clj-time.coerce :as c]
             [accrue.data.symbols :as symbols]
-            [accrue.utilities.time :as time]))
+            [accrue.utilities.time :as time]
+            [taoensso.timbre :as timbre]
+            ))
 
 
 (def barchart-ohlc-table "ohlc")
@@ -54,15 +56,19 @@
         api-response (http/get  barchart-url options)]
     (if (= (:status @api-response) 200)
       (cql-insert-ohlc (:results (json/read-json (:body @api-response))) params)
-      (println (str "Something wrong-> status code: " (:status @api-response))))))
+      (println (str "Something wrong-> status code: " @api-response)))))
 
 (defn select-barchart-data [partition-keys]
   (cql/select (conn/dbcon) barchart-ohlc-table (query/where 
                                       :ohlc_id [:in partition-keys])))
 
 
-(defn start-barchart-scheduling
-  ;;TODO: add the scheduler here
-  []
-  (let [all-symbols (symbols/select-all-symbols)]
-    (count all-symbols)))
+
+
+(defn fetch-daily-data [symbol]
+  (timbre/info (str "Saving " symbol " daily history"))
+  (fetch-save-ohlc {:symbol symbol
+                    :interval 1
+                    :type "daily"
+                    :maxRecords 30000
+                    :order "desc"}))

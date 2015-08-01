@@ -90,3 +90,8 @@
 (defn select-all-symbols
   []
   (select symbols))
+
+
+(defn raw-symbols
+  []
+  (map #(:symbol %) (select symbols)))

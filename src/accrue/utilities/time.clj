@@ -60,3 +60,11 @@
 
 (defn now []
   (t/now))
+
+
+
+(defn history-range
+  [past-years]
+  (let [history-year (- (current-year) past-years)]
+    ({:start-date (t/date-time  history-year 1 2 9 3 27 456)
+      :end-date (now)})))
