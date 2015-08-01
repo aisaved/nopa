@@ -35,9 +35,7 @@
   [symbol]
   (do 
     (barchart/fetch-daily-data symbol)
-    (go 
-      (>! daily-process-channel symbol))
-    ))
+    (>!! daily-process-channel symbol)))
 
 
 

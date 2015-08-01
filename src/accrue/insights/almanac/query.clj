@@ -112,9 +112,52 @@
 
 
 
-(defn apply-defaults
-  [raw-params]
-  raw-params)
+
+(defn clean-day [params]
+  (assoc params :day (Integer. (:day params))))
+
+
+(defn clean-month
+  [params]
+  (assoc params :month (Integer. (:month params))))
+
+
+(defn clean-history-range
+  [params]
+  (assoc params
+         :history-range-start (Integer. (:history-range-start params))
+         :history-range-end (Integer. (:history-range-end params))))
+
+
+(defn clean-gl-range
+  [params]
+  (assoc params
+         :gl-range-start (Integer. (:gl-range-start params))
+         :gl-range-end (Integer. (:gl-range-end params))))
+
+(defn clean-pattern-length
+  [params]
+  (assoc params :pattern-length (Integer. (:pattern-length params))))
+
+
+(defn clean-sd
+  [params]
+  (assoc params :sd (Integer. (:sd params))))
+
+(defn clean-accuracy-range
+  [params]
+  (assoc params :accuracy-range (Integer. (:accuracy-range params))))
+
+
+(def clean-params
+  (comp
+   clean-accuracy-range
+   clean-sd
+   clean-pattern-length
+   clean-gl-range
+   clean-history-range
+   clean-month
+   clean-day))
 
 
 (defn daily-pattern-query
@@ -128,7 +171,7 @@
   :interval 'daily'
   :symbol '<optional>'}"
   [raw-params]
-  (let [params (apply-defaults raw-params)
+  (let [params (clean-params raw-params)
         db-query (filter #(not (nil? %))
                          [(generate-daily-pattern-key-param params)
                           (generate-symbol-param params)])
