@@ -5,6 +5,7 @@
             [accrue.utilities.time :as t]))
 
 (def almanac-daily-table "almanac_daily")
+(def almanac-log-table "almanac_log")
 
 (defn date-id-time
   "converts date to date-id format

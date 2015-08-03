@@ -239,6 +239,8 @@
 (defn process-daily-symbol
   "Processing each symbol"
   [symbol]
-  (timbre/info (str "Daily pattern processing for " symbol))
+  (timbre/info (str "Starting daily pattern processing for " symbol))
   (let [data (sort-by #(:time %) (data-model/get-history-data symbol "daily"))]
-    (transform-data data)))
+    (transform-data data)
+    (timbre/info (str "Finished Daily pattern processing for " symbol " ****** "))
+    ))

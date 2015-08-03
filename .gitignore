@@ -19,3 +19,4 @@ deploy.sh
 resources/public/uploads/
 config.edn
 deps-tree
+test.clj

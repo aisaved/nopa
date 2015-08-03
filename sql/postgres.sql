@@ -61,4 +61,3 @@ CREATE TABLE user_password_reset(
 /*symbols*/
 CREATE TABLE symbols (symbol_id serial PRIMARY KEY, symbol varchar(20),  name varchar(100), sector varchar(250), industry varchar(250), market_cap decimal (16,2));
 CREATE INDEX symbol_name_index ON symbols(symbol);
-

@@ -5,15 +5,21 @@
     [clojure.edn :as edn]
     [aleph.tcp :as tcp]
     [gloss.core :as gloss]
-    [gloss.io :as io]))
+    [gloss.io :as io]
+    [accrue.utilities.time :as t]
+    ))
 
 
 (def end-signal "!ENDMSG!,")
 (def error-symbol "E,Invalid symbol.,")
 
+(defn append-zero
+  [num]
+  (if (< num 10) (str "0" num) (str num)))
+
 
 (defn date-to-iqfeed-date [date-time interval]
-  (let [year (t/year date-time)
+  (let [year (t/date-to-year date-time)
         month (append-zero (t/date-to-month date-time))
         day (append-zero (t/date-to-day date-time))
         hour (append-zero (t/date-to-hour date-time))
@@ -33,7 +39,7 @@
 (def history-socket-params 
   {:host "127.0.0.1",
    :port 9100,
-   :frame (string :utf-8 :delimiters ["\r\n"])
+   ;;:frame (string :utf-8 :delimiters ["\r\n"])
    })
 
 (defn client

@@ -33,6 +33,21 @@
   [date]
   (t/day date))
 
+(defn date-to-hour
+  [date]
+  (t/hour date))
+
+(defn date-to-minute
+  [date]
+  (t/minute date))
+
+
+(defn date-to-second
+  [date]
+  (t/second date))
+
+
+
 
 (defn timestamp-to-year
   "Returns the year from the given timestamp"

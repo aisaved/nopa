@@ -4,6 +4,7 @@
             [centipair.core.auth.user.routes :refer [user-routes]]
             [centipair.core.auth.user.api :refer [api-user-routes]]
             [accrue.insights.almanac.api :refer [api-almanac-pattern-routes]]
+            [accrue.insights.jobs :refer [start-almanac-process]]
             [centipair.core.init :as init]
             
             [centipair.middleware :as middleware]
@@ -64,6 +65,7 @@
   ;;start the expired session cleanup job
   (session/start-cleanup-job!)
   (init/init-system)
+  (start-almanac-process)
   (timbre/info (str
                  "\n-=[accrue started successfully"
                  (when (env :dev) "using the development profile")

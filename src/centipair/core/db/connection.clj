@@ -25,3 +25,9 @@
     (reset! conn (get-db-connection))
     @conn))
 
+
+(defn warm? []
+  (let [warm-connection (dbcon)]
+    (if (nil? warm-conection)
+      false
+      true)))
