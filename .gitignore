@@ -20,3 +20,6 @@ resources/public/uploads/
 config.edn
 deps-tree
 test.clj
+/deploy
+deploy.tar.gz
+deploy.zip

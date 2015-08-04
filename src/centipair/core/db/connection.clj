@@ -28,6 +28,6 @@
 
 (defn warm? []
   (let [warm-connection (dbcon)]
-    (if (nil? warm-conection)
+    (if (nil? warm-connection)
       false
       true)))

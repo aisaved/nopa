@@ -12,6 +12,3 @@
 
 (defn start-test-process []
   (schedule test-process/start-build (in 5 :seconds)))
-
-
-
