@@ -36,10 +36,6 @@
 
 
 
-
-
-
-
 (defn partition-data
   [data]
   (partition 100 1 data))
@@ -66,8 +62,76 @@
   (map prepare-data-row data))
 
 
+
+(defn initial-date-group-structure
+  [next]
+  (let [gl-percent-list (into [] (take 100 (repeat [])))
+        gl-percent-list-appended (assoc gl-percent-list (:years-passed next) (:gl-percent next))]
+    {:symbol (:symbol next)
+     :gl-percent gl-percent-list-appended}))
+
+(defn append-date-group-structure
+  [previous-structure next]
+  (let [gl-percent-list (:gl-percent previous-structure)
+        gl-percent-list-appended (assoc gl-percent-list (:years-passed next) (:gl-percent next))]
+    {:symbol (:symbol next)
+     :gl-percent gl-percent-list-appended}))
+
+(defn reduce-date
+  [previous next]
+  (let [date-key (keyword (str (:day next) "-" (:month next)))]
+    (if (nil? (date-key previous))
+      (assoc previous date-key
+             (initial-date-group-structure next))
+      (assoc previous date-key (append-date-group-structure (date-key previous) next)))))
+
+
+(defn arrange-data
+  [data]
+  (reduce reduce-date {} data)) 
+
+
+
+(defn find-next-day-gl-percent
+  "Find next day value for a day
+  Tries for next five days."
+  [data day-key year-index tries]
+  (if (> tries 4)
+    []
+    (let [next-day-key (cal/find-next-day-key day-key)
+          next-day-value (nth (:gl-percent (next-day-key data)) year-index)]
+      (if (empty? next-day-value)
+        (find-next-day-gl-percent data next-day-key year-index (inc tries))
+        next-day-value))))
+
+
+
+(defn fill-data
+  [data date-key year-index yearly-gl-percent]
+  (if (empty? yearly-gl-percent)
+    (find-next-day-gl-percent data date-key year-index 0)
+    yearly-gl-percent
+    ))
+
+
+(defn fill-n-day-data
+  [data previous next]
+  (let [date-key (first next)
+        gl-percent-list (:gl-percent (second next))
+        filled-holidays-list (keep-indexed (partial fill-data data date-key) gl-percent-list)
+        non-empty-gl-percent-list (filter #(not (empty? %)) filled-holidays-list)]
+    (assoc previous date-key
+           {:gl-percent non-empty-gl-percent-list
+            :symbol (:symbol (second next))})))
+
+(defn fill-holidays
+  [data]
+  (reduce (partial fill-n-day-data data) {} data))
+
 (def transform-data
   (comp
+   fill-holidays
+   arrange-data
    prepare-data
    partition-data))
 
