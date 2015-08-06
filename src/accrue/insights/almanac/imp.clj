@@ -138,14 +138,23 @@
         filled-holidays-list (keep-indexed (partial fill-data data date-key) gl-percent-list)
         non-empty-gl-percent-list (filter #(not (empty? %)) filled-holidays-list)
         t-data (apply map list non-empty-gl-percent-list)
-        sd (find-yearly-sd t-data)
-        win-percent (find-yearly-win-percent t-data)
+        sd (map find-yearly-sd t-data)
+        win-percent (map find-yearly-win-percent t-data)
+        avg-gl-percent (map find-yearly-average-gl-percent t-data)
+        save-map {:gl-data-filled t-data
+                  :symbol (:symbol (second next))
+                  :sd sd
+                  :avg-gl-percent avg-gl-percent
+                  :win-percent win-percent
+                  }
+        filled-data (assoc previous date-key
+                           save-map)
         ]
-    (assoc previous date-key
-           {:gl-percent non-empty-gl-percent-list
-            :symbol (:symbol (second next))
-            :sd sd
-            :win-percent win-percent})))
+
+    (almanac-models/save-group-data date-key save-map)
+    filled-data
+    
+    ))
 
 (defn compute-data
   [data]

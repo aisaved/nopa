@@ -42,3 +42,13 @@
                       (generate-n-years-map "accuracy_range" (:win-percent n-day-pattern))
                       ])]
     (cql/insert (conn/dbcon) almanac-daily-table params)))
+
+
+(defn save-group-data
+  [day-key filled-data]
+  (doseq [n-day (range 100)]
+    (save-data day-key {:symbol (:symbol filled-data)
+                        :pattern-length (+ 1 n-day)
+                        :avg-gl-percent (nth (:avg-gl-percent filled-data) n-day)
+                        :sd (nth (:sd filled-data) n-day)
+                        :win-percent (nth (:win-percent filled-data) n-day)})))
