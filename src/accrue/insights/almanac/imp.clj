@@ -110,27 +110,52 @@
   [data date-key year-index yearly-gl-percent]
   (if (empty? yearly-gl-percent)
     (find-next-day-gl-percent data date-key year-index 0)
-    yearly-gl-percent
-    ))
+    yearly-gl-percent))
 
 
-(defn fill-n-day-data
+
+(defn find-yearly-sd
+  [percent-gain-years]
+  (map #(stats/standard-deviation (take % percent-gain-years))
+       (range 5 (count percent-gain-years))))
+
+(defn find-yearly-win-percent
+  [percent-gain-years]
+  (map #(stats/win-percent (take % percent-gain-years))
+       (range 5 (count percent-gain-years))))
+
+
+(defn find-yearly-average-gl-percent
+  [percent-gain-years]
+  (map #(stats/average (take % percent-gain-years))
+       (range 5 (count percent-gain-years))))
+
+
+(defn compute-n-day-data
   [data previous next]
   (let [date-key (first next)
         gl-percent-list (:gl-percent (second next))
         filled-holidays-list (keep-indexed (partial fill-data data date-key) gl-percent-list)
-        non-empty-gl-percent-list (filter #(not (empty? %)) filled-holidays-list)]
+        non-empty-gl-percent-list (filter #(not (empty? %)) filled-holidays-list)
+        t-data (apply map list non-empty-gl-percent-list)
+        sd (find-yearly-sd t-data)
+        win-percent (find-yearly-win-percent t-data)
+        ]
     (assoc previous date-key
            {:gl-percent non-empty-gl-percent-list
-            :symbol (:symbol (second next))})))
+            :symbol (:symbol (second next))
+            :sd sd
+            :win-percent win-percent})))
 
-(defn fill-holidays
+(defn compute-data
   [data]
-  (reduce (partial fill-n-day-data data) {} data))
+  (reduce (partial compute-n-day-data data) {} data))
+
+
 
 (def transform-data
   (comp
-   fill-holidays
+   compute-data
    arrange-data
    prepare-data
    partition-data))
