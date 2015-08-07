@@ -150,9 +150,9 @@
         filled-data (assoc previous date-key
                            save-map)
         ]
-
+    (timbre/info (str "Saving data " (:symbol (second next))) " " date-key)
     (almanac-models/save-group-data date-key save-map)
-    filled-data
+    ;;filled-data
     
     ))
 
@@ -175,8 +175,8 @@
 (defn process-daily-symbol
   "Processing each symbol"
   [symbol]
-  (timbre/info (str "Starting daily pattern processing for " symbol))
+  (timbre/info (str "Starting new daily pattern processing for " symbol))
   (let [data (sort-by #(:time %) (data-model/get-history-data symbol "daily"))]
     (transform-data data)
-    ;;(timbre/info (str "Finished Daily pattern processing for " symbol " ****** "))
+    (timbre/info (str "Finished Daily pattern processing for " symbol " ****** "))
     ))

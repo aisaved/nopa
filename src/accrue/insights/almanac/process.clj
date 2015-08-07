@@ -3,7 +3,7 @@
              :as a
              :refer [>! <! >!! <!! go chan buffer close! thread
                      alts! alts!! timeout]]
-            [accrue.insights.almanac.daily :as daily-almanac]
+            [accrue.insights.almanac.imp :as daily-almanac]
             [accrue.data.barchart :as barchart]
             [accrue.data.symbols :as symbols]
             [accrue.insights.almanac.log :as log]
@@ -30,7 +30,8 @@
     (do
       (barchart/fetch-daily-data symbol)
       (log/daily-data-fetched symbol)
-      (process-daily-data symbol))))
+      (process-daily-data symbol)
+      )))
 
 
 (defn fetch-process-daily-data
