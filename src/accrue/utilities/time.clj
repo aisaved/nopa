@@ -3,7 +3,8 @@
    [clj-time.local :as l]
    [clj-time.core :as t]
    [clj-time.coerce :as c]
-   [clj-time.format :as f]))
+   [clj-time.format :as f])
+  (:import (java.util Calendar)))
 
 
 
@@ -26,6 +27,14 @@
   "Returns the month from the given datetime value"
   [date]
   (t/month date))
+
+
+(defn date-to-week
+  "Returns the week number starting from the year beginning"
+  [date]
+  (let [cal (Calendar/getInstance)]
+    (.setTime cal (.toDate date))
+    (.get cal Calendar/WEEK_OF_YEAR)))
 
 
 (defn date-to-day
