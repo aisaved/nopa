@@ -7,8 +7,7 @@
             [accrue.data.barchart :as barchart]
             [accrue.data.symbols :as symbols]
             [accrue.insights.almanac.log :as log]
-            [taoensso.timbre :as timbre]
-            ))
+            [taoensso.timbre :as timbre]))
 
 
 
@@ -30,8 +29,7 @@
     (do
       (barchart/fetch-daily-data symbol)
       (log/daily-data-fetched symbol)
-      (process-daily-data symbol)
-      )))
+      (process-daily-data symbol))))
 
 
 (defn fetch-process-daily-data
