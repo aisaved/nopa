@@ -1,8 +1,11 @@
 (ns accrue.data.symbols
   (:use 
-   clojure.java.io
+   ;;clojure.java.io
    centipair.core.db.connection)
-  (:require [clojure.data.csv :as csv]
+  (:require [clojure.java.io :as io]
+            [clojure.data.csv :as csv]
+            [accrue.utilities.file :as file]
+            [clojurewerkz.cassaforte.cql :as cql]
             [korma.core :as korma :refer [insert
                                           delete
                                           select
@@ -16,7 +19,6 @@
 
 
 (defentity symbols)
-
 
 (defn save-company-list
   [each]
@@ -56,19 +58,19 @@
 
 (defn company-list
   []
-    (with-open [rdr (reader "files/company-list.csv")]
+    (with-open [rdr (io/reader "files/company-list.csv")]
       (doall
        (map save-company-list (csv/read-csv rdr)))))
 
 (defn nya-index
   []
-  (with-open [rdr (reader "files/nya-index.csv")]
+  (with-open [rdr (io/reader "files/nya-index.csv")]
       (doall
         (map save-nya-index (csv/read-csv rdr)))))
 
 (defn symbol-info
   []
-  (with-open [rdr (reader "files/symbol-info.csv")]
+  (with-open [rdr (io/reader "files/symbol-info.csv")]
       (doall
        (map save-symbol-info (csv/read-csv rdr)))))
 
@@ -95,3 +97,28 @@
 (defn raw-symbols
   []
   (map #(:symbol %) (select symbols)))
+
+
+
+
+(def iqfeed-symbol-uri "http://www.dtniq.com/product/mktsymbols_v2.zip")
+(def symbols-table "symbols")
+
+(defn save-iqfeed-symbol
+  [lines]
+  (doseq [line lines]
+    (let [symbol-data (clojure.string/split line #"\t")]
+      (cql/insert (dbcon)
+                  symbols-table
+                  {:symbol (first symbol-data)
+                   :description (second symbol-data)
+                   :exchange (nth symbol-data 2)
+                   :listed_market (nth symbol-data 3)
+                   :security_type (nth symbol-data 4)}))))
+
+(defn unzip-iqfeed-file []
+  (file/unzip-read-text-file "files/mktsymbols_v2.zip" save-iqfeed-symbol))
+
+(defn download-iqfeed-symbol-file
+  []
+  (file/download-file iqfeed-symbol-uri "files/mktsymbols_v2.zip"))

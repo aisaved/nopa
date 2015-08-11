@@ -23,3 +23,4 @@ test.clj
 /deploy
 deploy.tar.gz
 deploy.zip
+mktsymbols_v2.zip
