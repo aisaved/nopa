@@ -5,7 +5,8 @@
              [accrue.data.models :as data-model]
              [accrue.utilities.time :as t]
              [accrue.data.symbols :as symbols]
-            ))
+             [taoensso.timbre :as timbre]
+             ))
 
 
 (def dserver-history-url "http://login.accrue.com/api/history")
@@ -35,19 +36,27 @@
 
 (defn fetch-daily-data
   [symbol-map]
-  (println (str "fetching---" (:symbol symbol-map)))
-  (let [symbol (:symbol symbol-map)
+  (timbre/info (str "fetching---" (:symbol symbol-map)))
+  (try
+    (let [symbol (:symbol symbol-map)
         query-params {:symbol symbol
                       :barsize 86400
                       :barcount 9341
                       :type "daily"
                       }
         results (client/get dserver-history-url {:accept :json
-                                     :query-params query-params})
+                                                 :query-params query-params})
         result-vector (rest (get-in (parse-string (:body results)) ["data" symbol]))]
     
     (doseq [accrue-ohlc (map (partial dserver-accrue-ohlc query-params) result-vector)]
-      (data-model/save-ohlc accrue-ohlc))))
+      (data-model/save-ohlc accrue-ohlc)))
+    (catch Exception e (str "caught exception: " (.getMessage e)))))
+
+
+(defn fetch-daily-group-data
+  [symbol-group]
+  (doseq [symbol symbol-group]
+    (fetch-daily-data symbol)))
 
 
 (defn start-dserver-scheduling
@@ -55,7 +64,5 @@
   []
   (let [all-symbols (symbols/select-all-symbols)
         symbol-grouped (partition-all 20 all-symbols)]
-    (doseq [symbols symbol-grouped] (pmap fetch-daily-data symbols))
-    ;;(doseq [symbol all-symbols] (fetch-daily-data symbol))
-    ))
+    (pmap fetch-daily-group-data symbol-grouped)))
 
