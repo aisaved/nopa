@@ -6,6 +6,7 @@
             [clojure.data.csv :as csv]
             [accrue.utilities.file :as file]
             [clojurewerkz.cassaforte.cql :as cql]
+            [clojurewerkz.cassaforte.query :as query]
             [korma.core :as korma :refer [insert
                                           delete
                                           select
@@ -122,3 +123,10 @@
 (defn download-iqfeed-symbol-file
   []
   (file/download-file iqfeed-symbol-uri "files/mktsymbols_v2.zip"))
+
+
+(defn get-symbol 
+  [params]
+  (let [symbol-obj (first (cql/select (dbcon) symbols-table (query/where [[= :symbol (:symbol params)]])))]
+    {:status (if (nil? symbol-obj) 404 200)
+     :result symbol-obj}))

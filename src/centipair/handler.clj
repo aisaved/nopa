@@ -4,6 +4,7 @@
             [centipair.core.auth.user.routes :refer [user-routes]]
             [centipair.core.auth.user.api :refer [api-user-routes]]
             [accrue.insights.almanac.api :refer [api-almanac-pattern-routes]]
+            [accrue.data.api :refer [api-data-routes]]
             [accrue.insights.jobs :refer [start-almanac-process]]
             [centipair.core.init :as init]
             
@@ -86,6 +87,7 @@
     (wrap-routes #'user-routes middleware/wrap-csrf)
     (wrap-routes #'home-routes middleware/wrap-csrf)
     #'api-almanac-pattern-routes
+    #'api-data-routes
     #'base-routes))
 
 (def app (middleware/wrap-base #'app-base))
