@@ -16,7 +16,7 @@
 (defn ohlc-group-gl-percent
   [ohlc-group]
   (let [open (:open (first ohlc-group))
-        close (:close (first ohlc-group))]
+        close (:close (last ohlc-group))]
     (gl-percent open close)))
 
 
