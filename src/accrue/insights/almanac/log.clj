@@ -26,7 +26,7 @@
   [interval symbol]
   (let [log-info (first (cql/select (conn/dbcon)
                           almanac-log-table
-                          (where [[= :process_type interval] [= :symbol symbol] ])))]
+                          (where [[= :process interval] [= :symbol symbol] ])))]
     (if (empty? log-info)
       false
       (:completed log-info))))

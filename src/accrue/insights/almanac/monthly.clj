@@ -1,4 +1,4 @@
-(ns accrue.insights.almanac.group
+(ns accrue.insights.almanac.monthly
   (:require [accrue.data.models :as data-model]
             [accrue.utilities.time :as t]
             [accrue.insights.almanac.calendar :as cal]
@@ -94,6 +94,6 @@
 
 (defn process-monthly-pattern
   [symbol]
-  (timbre/info (str "Starting new daily pattern processing for " symbol))
+  (timbre/info (str "Starting monthly pattern processing for " symbol))
   (let [data (sort-by #(:time %) (data-model/get-history-data symbol "daily"))]
     (transform-monthly-data data)))
