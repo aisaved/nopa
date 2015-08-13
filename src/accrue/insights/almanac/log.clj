@@ -7,41 +7,36 @@
 
 
 
-(defn daily-data-available?
-  [symbol]
-  (let [info (first (cql/select (conn/dbcon)
-                          almanac-model/almanac-log-table
-                          (where [[= :symbol symbol] [= :process_type "daily"]])))]
-    (if (empty? info)
+
+(def almanac-log-table "almanac_log")
+
+(defn data-available?
+  [interval symbol]
+  (let [log-info (first (cql/select (conn/dbcon)
+                                    almanac-log-table
+                                    (where [[= :process interval] [= :symbol symbol] ])))]
+    (if (empty? log-info)
       false
-      (:data_fetched info))))
+      (:completed log-info))))
 
 
-(defn daily-data-processed?
-  [symbol]
-  (let [info (first (cql/select (conn/dbcon)
-                          almanac-model/almanac-log-table
-                          (where [[= :symbol symbol] [= :process_type "daily"]])))]
-    (if (empty? info)
+
+
+(defn data-processed?
+  [interval symbol]
+  (let [log-info (first (cql/select (conn/dbcon)
+                          almanac-log-table
+                          (where [[= :process_type interval] [= :symbol symbol] ])))]
+    (if (empty? log-info)
       false
-      (:data_processed info))))
+      (:completed log-info))))
 
 
-(defn daily-data-fetched
-  [symbol]
+
+(defn log-process
+  [process symbol completed]
   (cql/insert (conn/dbcon)
-              almanac-model/almanac-log-table
-              {:symbol symbol
-               :process_type "daily"
-               :data_fetched true
-               :data_processed false}))
-
-
-(defn daily-data-processed
-  [symbol]
-  (cql/insert (conn/dbcon)
-              almanac-model/almanac-log-table
-              {:symbol symbol
-               :process_type "daily"
-               :data_fetched true
-               :data_processed true}))
+              almanac-log-table
+              {:process process
+               :symbol symbol
+               :completed completed}))

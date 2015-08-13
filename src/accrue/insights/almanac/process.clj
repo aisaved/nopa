@@ -4,31 +4,34 @@
              :refer [>! <! >!! <!! go chan buffer close! thread
                      alts! alts!! timeout]]
             [accrue.insights.almanac.imp :as daily-almanac]
+            [accrue.insights.almanac.imp :as monthly-almanac]
             [accrue.data.barchart :as barchart]
             [accrue.data.symbols :as symbols]
             [accrue.insights.almanac.log :as log]
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as timbre]
+            [accrue.constants :as c]
+            ))
 
 
 
 (defn process-daily-data
   [symbol]
-  (if (log/daily-data-processed? symbol)
+  (if (log/data-processed? c/almanac-daily symbol)
     (timbre/info (str "Daily pattern already computed for " symbol))
     (do
       (daily-almanac/process-daily-symbol symbol)
-      (log/daily-data-processed symbol))))
+      (log/log-process c/almanac-daily symbol true))))
 
 
 (defn save-daily-data
   [symbol]
-  (if (log/daily-data-available? symbol)
+  (if (log/data-available? c/data-daily symbol)
     (do
       (timbre/info (str "Daily data available for " symbol))
       (process-daily-data symbol))
     (do
       (barchart/fetch-daily-data symbol)
-      (log/daily-data-fetched symbol)
+      (log/log-process c/data-daily symbol true)
       (process-daily-data symbol))))
 
 

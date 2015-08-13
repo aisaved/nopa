@@ -99,4 +99,8 @@ gl_percent_100 decimal, accuracy_range_100 decimal,sd_100 decimal,
 PRIMARY KEY (date_id, symbol));
 
 
-CREATE TABLE almanac_log(symbol text, process_type text,  data_fetched boolean, data_processed boolean, PRIMARY KEY(symbol, process_type));
+CREATE TABLE almanac_log(
+       process text,
+       symbol text,
+       completed boolean,
+       PRIMARY KEY(process, symbol));
