@@ -56,7 +56,7 @@
 
 (defn save-monthly-data
   [monthly-data-map]
-  (let [pkey (str (:month monthly-data-map))
+  (let [pkey (str "m-" (:month monthly-data-map))
          params (into {}
                  [{:date_id pkey
                    :symbol (:symbol monthly-data-map)}
@@ -64,3 +64,17 @@
                   (generate-n-years-map "sd" (:sd monthly-data-map))
                   (generate-n-years-map "accuracy_range" (:win-percent monthly-data-map))])]
     (cql/insert (conn/dbcon) almanac-daily-table params)))
+
+
+(defn save-weekly-data
+  [monthly-data-map]
+  (let [pkey (str "w-" (:week monthly-data-map))
+         params (into {}
+                 [{:date_id pkey
+                   :symbol (:symbol monthly-data-map)}
+                  (generate-n-years-map "gl_percent" (:avg-gl-percent monthly-data-map))
+                  (generate-n-years-map "sd" (:sd monthly-data-map))
+                  (generate-n-years-map "accuracy_range" (:win-percent monthly-data-map))])]
+    (cql/insert (conn/dbcon) almanac-daily-table params)))
+
+

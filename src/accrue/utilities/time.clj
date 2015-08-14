@@ -56,7 +56,11 @@
   (t/second date))
 
 
-
+(defn timestamp-to-week
+  "Returns the week number from the given timestamp"
+  [timestamp]
+  (let [datetime (c/from-sql-date timestamp)]
+    (date-to-week datetime)))
 
 (defn timestamp-to-year
   "Returns the year from the given timestamp"
