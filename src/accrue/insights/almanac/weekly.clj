@@ -10,11 +10,6 @@
             [taoensso.timbre :as timbre]))
 
 
-
-
-
-
-
 (defn group-weekly-data 
   [data]
   (group-by #(str (t/timestamp-to-week (:time %)) "-" (t/timestamp-to-year (:time %))) data))
@@ -93,6 +88,31 @@
 
 ;;-----------------------------------------------------------------------------
 
+(defn get-nth
+  [index data]
+  (nth data index))
+
+(defn compute-each-data
+  [each-data]
+  (let [whole-data (if (= (:month each-data) 2)
+                     (filter #(> (count %) 3) (:gl-percent each-data))
+                     (filter #(> (count %) 4) (:gl-percent each-data)))
+        week-1 (map (partial get-nth 0) whole-data)
+        week-2 (map (partial get-nth 1) whole-data)
+        week-3 (map (partial get-nth 2) whole-data)
+        week-4 (map (partial get-nth 3) whole-data)
+        week-5 (map (partial get-nth 4) whole-data)]
+    {:symbol (:symbol each-data) :month (:month each-data)
+     :week-1 week-1
+     :week-2 week-2
+     :week-3 week-3
+     :week-4 week-4
+     :week-5 week-5}))
+
+(defn compute-save-mw-data
+  [data]
+  (map compute-each-data data))
+
 
 (defn collect-mw-years-data
   [previous next]
@@ -159,7 +179,7 @@
 
 (def transform-mw-data
   (comp
-   
+   compute-save-mw-data
    aggregate-mw-data
    sorted-mw-data
    regroup-mw-data
