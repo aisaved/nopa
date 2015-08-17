@@ -101,13 +101,14 @@
         week-2 (map (partial get-nth 1) whole-data)
         week-3 (map (partial get-nth 2) whole-data)
         week-4 (map (partial get-nth 3) whole-data)
-        week-5 (map (partial get-nth 4) whole-data)]
-    {:symbol (:symbol each-data) :month (:month each-data)
-     :week-1 week-1
-     :week-2 week-2
-     :week-3 week-3
-     :week-4 week-4
-     :week-5 week-5}))
+        week-data {:symbol (:symbol each-data) :month (:month each-data)
+                   :week-1 week-1
+                   :week-2 week-2
+                   :week-3 week-3
+                   :week-4 week-4}]
+    (if (= (:month each-data) 2)
+      week-data
+      (assoc week-data :week-5 (map (partial get-nth 3) whole-data)))))
 
 (defn compute-save-mw-data
   [data]
