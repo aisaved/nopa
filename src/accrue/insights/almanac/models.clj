@@ -78,3 +78,13 @@
     (cql/insert (conn/dbcon) almanac-daily-table params)))
 
 
+(defn save-mw-data
+  [mw-data-map]
+  (let [pkey (str "mw-" (:month mw-data-map) "-" (:week mw-data-map))
+         params (into {}
+                 [{:date_id pkey
+                   :symbol (:symbol mw-data-map)}
+                  (generate-n-years-map "gl_percent" (:avg-gl-percent mw-data-map))
+                  (generate-n-years-map "sd" (:sd mw-data-map))
+                  (generate-n-years-map "accuracy_range" (:win-percent mw-data-map))])]
+    (cql/insert (conn/dbcon) almanac-daily-table params)))

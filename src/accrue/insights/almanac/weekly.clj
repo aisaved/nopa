@@ -88,6 +88,17 @@
 
 ;;-----------------------------------------------------------------------------
 
+
+(defn save-mw-data
+  [mw-data]
+  (doseq [week (range 1 6)]
+    (if (not (and (= 2 (:month mw-data)) (= 5 week)))
+      (almanac-models/save-mw-data {:month (:month mw-data)
+                                    :symbol (:symbol mw-data)
+                                    :avg-gl-percent ((keyword (str "week-" week "-avg-gl-percent")) mw-data)
+                                    :win-percent ((keyword (str "week-" week "-win-percent")) mw-data)
+                                    :sd ((keyword (str "week-" week "-sd")) mw-data)}))))
+
 (defn get-nth
   [index data]
   (nth data index))
@@ -102,17 +113,31 @@
         week-3 (map (partial get-nth 2) whole-data)
         week-4 (map (partial get-nth 3) whole-data)
         week-data {:symbol (:symbol each-data) :month (:month each-data)
-                   :week-1 week-1
-                   :week-2 week-2
-                   :week-3 week-3
-                   :week-4 week-4}]
+                   :week-1-sd (calc/find-yearly-sd week-1)
+                   :week-1-avg-gl-percent (calc/find-yearly-average-gl-percent week-1)
+                   :week-1-win-percent (calc/find-yearly-win-percent week-1)
+                   :week-2-sd (calc/find-yearly-sd week-2)
+                   :week-2-avg-gl-percent (calc/find-yearly-average-gl-percent week-2)
+                   :week-2-win-percent (calc/find-yearly-win-percent week-2)
+                   :week-3-sd (calc/find-yearly-sd week-3)
+                   :week-3-avg-gl-percent (calc/find-yearly-average-gl-percent week-3)
+                   :week-3-win-percent (calc/find-yearly-win-percent week-3)
+                   :week-4-sd (calc/find-yearly-sd week-4)
+                   :week-4-avg-gl-percent (calc/find-yearly-average-gl-percent week-4)
+                   :week-4-win-percent (calc/find-yearly-win-percent week-4)
+                   }]
     (if (= (:month each-data) 2)
-      week-data
-      (assoc week-data :week-5 (map (partial get-nth 3) whole-data)))))
+      (save-mw-data week-data)
+      (let [week-5  (map (partial get-nth 4) whole-data)]
+        (save-mw-data
+         (assoc week-data
+                :week-5-sd (calc/find-yearly-sd week-5)
+                :week-5-avg-gl-percent (calc/find-yearly-average-gl-percent week-5)
+                :week-5-win-percent (calc/find-yearly-win-percent week-5)))))))
 
 (defn compute-save-mw-data
   [data]
-  (map compute-each-data data))
+  (doall (map compute-each-data data)))
 
 
 (defn collect-mw-years-data
