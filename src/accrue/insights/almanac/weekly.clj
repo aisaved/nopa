@@ -94,6 +94,7 @@
   (doseq [week (range 1 6)]
     (if (not (and (= 2 (:month mw-data)) (= 5 week)))
       (almanac-models/save-mw-data {:month (:month mw-data)
+                                    :week week
                                     :symbol (:symbol mw-data)
                                     :avg-gl-percent ((keyword (str "week-" week "-avg-gl-percent")) mw-data)
                                     :win-percent ((keyword (str "week-" week "-win-percent")) mw-data)
