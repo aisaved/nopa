@@ -35,7 +35,7 @@
   [day-key n-day-pattern]
   (let [date-id (partition-key day-key (:pattern-length n-day-pattern))
         params (into {}
-                     [{:date_id date-id
+                     [{:date_id (str "d-" date-id)
                        :symbol (:symbol n-day-pattern)}
                       (generate-n-years-map "gl_percent" (:avg-gl-percent n-day-pattern))
                       (generate-n-years-map "sd" (:sd n-day-pattern))

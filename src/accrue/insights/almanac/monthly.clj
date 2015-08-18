@@ -96,4 +96,5 @@
   [symbol]
   (timbre/info (str "Starting monthly pattern processing for " symbol))
   (let [data (sort-by #(:time %) (data-model/get-history-data symbol "daily"))]
-    (transform-monthly-data data)))
+    (transform-monthly-data data)
+    (timbre/info (str "Finished Monthly pattern processing for " symbol " ****** "))))

@@ -16,7 +16,7 @@
 
 
 
-(defn relevant-data
+(defn relevant-weekly-data
   [each]
   (let [reference (first (second each))
         week (t/timestamp-to-week (:time reference))
@@ -27,9 +27,9 @@
      :years-passed years-passed
      :sort-key (Integer. (str week years-passed))}))
 
-(defn relevant-data-group
+(defn relevant-weekly-data-group
   [data]
-  (map relevant-data data))
+  (map relevant-weekly-data data))
 
 
 (defn regroup-weekly-data
@@ -48,20 +48,20 @@
     {:week (first each-data) :symbol symbol :gl-percent sorted-gl-percent}))
 
 
-(defn arrange-regrouped-data
+(defn arrange-regrouped-weekly-data
   [data]
   (map sort-regrouped-weekly-data data))
 
-(defn compute-each
+(defn compute-each-weekly
   [each-data]
   (assoc each-data
          :sd (calc/find-yearly-sd (:gl-percent each-data))
          :avg-gl-percent (calc/find-yearly-average-gl-percent (:gl-percent each-data))
          :win-percent (calc/find-yearly-win-percent (:gl-percent each-data))))
 
-(defn compute
+(defn compute-weekly
   [data]
-  (map compute-each data))
+  (map compute-each-weekly data))
 
 
 (defn save-weekly-data [data]
@@ -72,10 +72,10 @@
 (def transform-weekly-data
   (comp
    save-weekly-data
-   compute
-   arrange-regrouped-data
+   compute-weekly
+   arrange-regrouped-weekly-data
    regroup-weekly-data
-   relevant-data-group
+   relevant-weekly-data-group
    group-weekly-data))
 
 
@@ -84,7 +84,9 @@
   [symbol]
   (timbre/info (str "Starting weekly pattern processing for " symbol))
   (let [data (sort-by #(:time %) (data-model/get-history-data symbol "daily"))]
-    (transform-weekly-data data)))
+    (transform-weekly-data data)
+    (timbre/info (str "Finished year weekly pattern processing for " symbol " ****** "))
+    ))
 
 ;;-----------------------------------------------------------------------------
 
@@ -104,7 +106,7 @@
   [index data]
   (nth data index))
 
-(defn compute-each-data
+(defn compute-each-mw-data
   [each-data]
   (let [whole-data (if (= (:month each-data) 2)
                      (filter #(> (count %) 3) (:gl-percent each-data))
@@ -138,7 +140,7 @@
 
 (defn compute-save-mw-data
   [data]
-  (doall (map compute-each-data data)))
+  (doall (map compute-each-mw-data data)))
 
 
 (defn collect-mw-years-data
@@ -173,7 +175,7 @@
   [each-mw-week-group]
   (calc/ohlc-group-gl-percent each-mw-week-group))
 
-(defn relevant-data
+(defn relevant-mw-data
   [each-data]
   (let [mw-week-group (second each-data)
         reference (first (first (second each-data)))
@@ -186,7 +188,7 @@
      :sort-key (Integer. (str month years-passed))}))
 
 (defn prepare-mw-data [data]
-  (map relevant-data data))
+  (map relevant-mw-data data))
 
 
 (defn mw-week-groups
@@ -216,8 +218,9 @@
 
 
 ;;mw = month weekly pattern
-(defn process-mw-pattern
+(defn process-month-weekly-pattern
   [symbol]
   (timbre/info (str "Starting month weekly pattern processing for " symbol))
   (let [data (sort-by #(:time %) (data-model/get-history-data symbol "daily"))]
-    (transform-mw-data data)))
+    (transform-mw-data data)
+    (timbre/info (str "Finished month weekly pattern processing for " symbol " ****** "))))
