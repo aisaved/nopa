@@ -8,6 +8,7 @@
 (def almanac-daily "almanac-daily")
 (def almanac-monthly "almanac-monthly")
 (def almanac-weekly "almanac-weekly")
+(def almanac-month-weekly "almanac-month-weekly")
 
 (def daily-pattern-prefix "d")
 (def monthly-pattern-prefix "m")
