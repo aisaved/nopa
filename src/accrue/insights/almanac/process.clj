@@ -95,6 +95,3 @@
       (doseq [symbol-group symbol-groups]
         (go
           (process-symbol-group symbol-group))))))
-
-
-
