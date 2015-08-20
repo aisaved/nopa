@@ -15,6 +15,15 @@
 
 
 
+(defn get-available-threads []
+  (let [available-cores (.availableProcessors (Runtime/getRuntime))]
+    (if (> available-cores 10)
+      10
+      available-cores)))
+
+(def threads (get-available-threads))
+
+
 (defn process-weekly-data
   [symbol]
   (if (log/data-processed? c/almanac-weekly symbol)
@@ -32,7 +41,6 @@
       (log/log-process c/almanac-month-weekly symbol true))))
 
 
-
 (defn process-monthly-data
   [symbol]
   (if (log/data-processed? c/almanac-monthly symbol)
@@ -40,7 +48,6 @@
     (do
       (monthly-almanac/process-monthly-pattern symbol)
       (log/log-process c/almanac-monthly symbol true))))
-
 
 
 (defn process-daily-data
@@ -52,25 +59,42 @@
       (log/log-process c/almanac-daily symbol true))))
 
 
+(defn process-data [symbol]
+  (do 
+    (process-monthly-data symbol)
+    (process-weekly-data symbol)
+    (process-month-weekly-data symbol)
+    (process-daily-data symbol)))
+
+
 (defn save-daily-data
   [symbol]
   (if (log/data-available? c/data-daily symbol)
     (do
       (timbre/info (str "Daily data available for " symbol))
-      (process-monthly-data symbol)
-      (process-daily-data symbol))
+      (process-data symbol))
     (do
       (barchart/fetch-daily-data symbol)
       (log/log-process c/data-daily symbol true)
-      (process-monthly-data symbol)
-      (process-weekly-data symbol)
-      (process-month-weekly-data symbol)
-      (process-daily-data symbol))))
+      (process-data symbol))))
+
+
+(defn process-symbol-group
+  [symbol-group]
+  (doseq [symbol symbol-group]
+    (save-daily-data symbol)))
 
 
 (defn fetch-process-daily-data
   []
   (do
-    (let [all-symbols (symbols/raw-symbols)]
-      (doseq [symbol all-symbols]
-        (go (save-daily-data symbol))))))
+    (let [all-symbols (symbols/raw-symbols)
+          symbols-count (count all-symbols)
+          n-partition (quot symbols-count threads)
+          symbol-groups (partition-all n-partition all-symbols)]
+      (doseq [symbol-group symbol-groups]
+        (go
+          (process-symbol-group symbol-group))))))
+
+
+
