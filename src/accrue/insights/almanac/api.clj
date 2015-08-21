@@ -9,7 +9,7 @@
 (defresource almanac-pattern-api []
   :available-media-types ["application/json"]
   :handle-ok (fn [context] 
-               (response/liberator-json-response (query/daily-pattern-query (get-in context [:request :params])))))
+               (response/liberator-json-response (query/pattern-query (get-in context [:request :params])))))
 
 
 

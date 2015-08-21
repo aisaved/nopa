@@ -2,7 +2,8 @@
   (:require [clojurewerkz.cassaforte.query :refer :all]
             [centipair.core.db.connection :as conn]
             [clojurewerkz.cassaforte.cql :as cql]
-            [accrue.insights.almanac.models :as almanac-model]))
+            [accrue.insights.almanac.models :as almanac-model]
+            [validateur.validation :refer :all]))
 
 
 (defn fetch-by-day-pattern
@@ -15,7 +16,12 @@
 
 (defn generate-daily-pattern-key-param
   [params]
-  [= :date_id (str (:day params) "-" (:month params) "-"  (:pattern-length params))])
+  [= :date_id (str "d-" (:day params) "-" (:month params) "-"  (:pattern-length params))])
+
+
+(defn generate-monthly-pattern-key-param
+  [params]
+  [= :date_id (str "m-" (:month params))])
 
 
 (defn generate-symbol-param
@@ -111,9 +117,18 @@
      [true each])))
 
 
+(defn clean-week
+  [params]
+  (assoc params :week (Integer. (:week params))))
 
 
-(defn clean-day [params]
+(defn clean-quarter
+  [params]
+  (assoc params :quarter (Integer. (:quarter params))))
+
+
+(defn clean-day
+  [params]
   (assoc params :day (Integer. (:day params))))
 
 
@@ -155,7 +170,11 @@
    clean-sd
    clean-pattern-length
    clean-gl-range
-   clean-history-range
+   clean-history-range))
+
+
+(def clean-daily-params
+  (comp
    clean-month
    clean-day))
 
@@ -170,8 +189,8 @@
   :pattern-length 5
   :interval 'daily'
   :symbol '<optional>'}"
-  [raw-params]
-  (let [params (clean-params raw-params)
+  [clean-params]
+  (let [params (clean-daily-params clean-params)
         db-query (filter #(not (nil? %))
                          [(generate-daily-pattern-key-param params)
                           (generate-symbol-param params)])
@@ -179,3 +198,84 @@
                                almanac-model/almanac-daily-table
                                (where db-query))]
     (filter (query-filter params) db-results)))
+
+
+(defn monthly-pattern-query
+  "{:month 8
+  :gl-range-start 5 :gl-range-end 10
+  :accuracy-range 70
+  :position long/short
+  :sd 5
+  :history-range-start 5 :history-range-end 10
+  :pattern-length 5
+  :interval 'monthly'
+  :symbol '<optional>'}"
+  [clean-params]
+  (let [params (clean-month clean-params)
+        db-query (filter #(not (nil? %))
+                         [(generate-monthly-pattern-key-param params)
+                          (generate-symbol-param params)])
+        db-results (cql/select (conn/dbcon)
+                               almanac-model/almanac-daily-table
+                               (where db-query))]
+    (filter (query-filter params) db-results)))
+
+
+
+(defn month-weekly-pattern-query
+  "{:month 8
+  :week 1
+  :gl-range-start 5 :gl-range-end 10
+  :accuracy-range 70
+  :position long/short
+  :sd 5
+  :history-range-start 5 :history-range-end 10
+  :pattern-length 5
+  :interval 'weekly'
+  :symbol '<optional>'}"
+  [clean-params]
+  )
+
+
+(defn quarter-weekly-pattern-query
+  "{:month 8
+  :week 1
+  :gl-range-start 5 :gl-range-end 10
+  :accuracy-range 70
+  :position long/short
+  :sd 5
+  :history-range-start 5 :history-range-end 10
+  :pattern-length 5
+  :interval 'weekly'
+  :symbol '<optional>'}"
+  [clean-params]
+  )
+
+
+(defn weekly-pattern-query
+  "{:month 52
+  :gl-range-start 5 :gl-range-end 10
+  :accuracy-range 70
+  :position long/short
+  :sd 5
+  :history-range-start 5 :history-range-end 10
+  :pattern-length 5
+  :interval 'weekly'
+  :symbol '<optional>'}"
+  [clean-params]
+  (let [params (clean-week clean-params)]
+    (if (:month params)
+      (month-weekly-pattern-query params)
+      (if (:quarter params)
+        (quarter-weekly-pattern-query params)
+        ""
+        ))))
+
+
+(defn pattern-query
+  [raw-params]
+  (let [clean-params (clean-params raw-params)]
+    (case (:type raw-params)
+      "daily" (daily-pattern-query clean-params)
+      "monthly" (monthly-pattern-query clean-params)
+      "weekly" (weekly-pattern-query clean-params))))
