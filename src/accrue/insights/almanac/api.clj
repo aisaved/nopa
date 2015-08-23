@@ -8,6 +8,11 @@
 
 (defresource almanac-pattern-api []
   :available-media-types ["application/json"]
+  :malformed? (fn [context]
+                (let [params (get-in context [:request :params])]
+                  (if (nil? (:type params))
+                    true
+                    (nil? (some #{(:type params)} ["monthly" "daily" "weekly"])))))
   :handle-ok (fn [context] 
                (response/liberator-json-response (query/pattern-query (get-in context [:request :params])))))
 
