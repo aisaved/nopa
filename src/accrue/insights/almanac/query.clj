@@ -24,6 +24,20 @@
   [= :date_id (str "m-" (:month params))])
 
 
+(defn generate-month-weekly-pattern-key-param
+  [params]
+  [= :date_id (str "mw-" (:month params) "-" (:week params))])
+
+(defn generate-weekly-pattern-key-param
+  [params]
+  [= :date_id (str "w-" (:week params))])
+
+
+(defn generate-quarter-weekly-pattern-key-param
+  [params]
+  [= :date_id (str "w-" (:week params))])
+
+
 (defn generate-symbol-param
   [params]
   (if (nil? (:symbol params))
@@ -179,6 +193,17 @@
    clean-day))
 
 
+(defn db-query
+  [pattern-key params]
+  (let [db-query (filter #(not (nil? %))
+                         [pattern-key
+                          (generate-symbol-param params)])
+        db-results (cql/select (conn/dbcon)
+                               almanac-model/almanac-daily-table
+                               (where db-query))]
+    (filter (query-filter params) db-results)))
+
+
 (defn daily-pattern-query
   "{:day 7 :month 8
   :gl-range-start 5 :gl-range-end 10
@@ -191,13 +216,8 @@
   :symbol '<optional>'}"
   [clean-params]
   (let [params (clean-daily-params clean-params)
-        db-query (filter #(not (nil? %))
-                         [(generate-daily-pattern-key-param params)
-                          (generate-symbol-param params)])
-        db-results (cql/select (conn/dbcon)
-                               almanac-model/almanac-daily-table
-                               (where db-query))]
-    (filter (query-filter params) db-results)))
+        pattern-key (generate-daily-pattern-key-param params)]
+    (db-query pattern-key params)))
 
 
 (defn monthly-pattern-query
@@ -212,13 +232,8 @@
   :symbol '<optional>'}"
   [clean-params]
   (let [params (clean-month clean-params)
-        db-query (filter #(not (nil? %))
-                         [(generate-monthly-pattern-key-param params)
-                          (generate-symbol-param params)])
-        db-results (cql/select (conn/dbcon)
-                               almanac-model/almanac-daily-table
-                               (where db-query))]
-    (filter (query-filter params) db-results)))
+        pattern-key (generate-monthly-pattern-key-param params)]
+    (db-query pattern-key params)))
 
 
 
@@ -231,25 +246,30 @@
   :sd 5
   :history-range-start 5 :history-range-end 10
   :pattern-length 5
-  :interval 'weekly'
+  :interval 'monthly'
   :symbol '<optional>'}"
   [clean-params]
-  )
+  (let [params (clean-month clean-params)
+        pattern-key (generate-month-weekly-pattern-key-param params)]
+    (db-query pattern-key params)))
 
 
 (defn quarter-weekly-pattern-query
-  "{:month 8
-  :week 1
+  "{:week 1
+  :quarter 2
   :gl-range-start 5 :gl-range-end 10
   :accuracy-range 70
   :position long/short
   :sd 5
   :history-range-start 5 :history-range-end 10
   :pattern-length 5
-  :interval 'weekly'
+  :interval 'monthly'
   :symbol '<optional>'}"
   [clean-params]
-  )
+  (let [params (clean-month clean-params)
+        pattern-key (generate-quarter-weekly-pattern-key-param params)]
+    (db-query pattern-key params)))
+
 
 
 (defn weekly-pattern-query
@@ -268,8 +288,9 @@
       (month-weekly-pattern-query params)
       (if (:quarter params)
         (quarter-weekly-pattern-query params)
-        ""
-        ))))
+        (let [params (clean-week clean-params)
+              pattern-key (generate-weekly-pattern-key-param params)]
+          (db-query pattern-key params))))))
 
 
 (defn pattern-query
