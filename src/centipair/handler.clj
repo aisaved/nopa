@@ -66,7 +66,7 @@
   ;;start the expired session cleanup job
   (session/start-cleanup-job!)
   (init/init-system)
-  (start-almanac-process)
+  ;;(start-almanac-process)
   (timbre/info (str
                  "\n-=[accrue started successfully"
                  (when (env :dev) "using the development profile")
