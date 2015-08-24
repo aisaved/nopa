@@ -182,13 +182,13 @@
   (comp
    clean-accuracy-range
    clean-sd
-   clean-pattern-length
    clean-gl-range
    clean-history-range))
 
 
 (def clean-daily-params
   (comp
+   clean-pattern-length
    clean-month
    clean-day))
 
