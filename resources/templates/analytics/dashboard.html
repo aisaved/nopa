@@ -161,6 +161,7 @@
 	</div>
 	<div id="content">
 	    <h4>Dashboard</h4>
+	    
 	</div>
       </div>
       <!-- /.container-fluid till here-->
@@ -178,12 +179,12 @@
   {%script "/assets/js/script.js" %}
   {% if dev %}
   <script src="/js/react.js"></script>
-  {% script "/cljs-admin/out/goog/base.js" %}
-  {% script "/cljs-admin/app-admin.js" %}
+  {% script "/cljs/out/goog/base.js" %}
+  {% script "/cljs/app.js" %}
   <script type="text/javascript">goog.require("centipair.app");</script>
   {% else %}
   <!--<script src="//cdnjs.cloudflare.com/ajax/libs/react/0.11.2/react.min.js"></script>-->
-  {% script "/cljs-admin/app-admin.js" %}
+  {% script "/cljs/app.js" %}
     {% endif %}
   <script type="text/javascript">
     var context = "{{servlet-context}}";
@@ -209,6 +210,9 @@
      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
      }
   </script>
+<script>
+  centipair.registry.load_function("render-dashboard-menu");
+</script>
   
 </body>
 
