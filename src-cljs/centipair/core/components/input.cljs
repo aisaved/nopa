@@ -53,7 +53,7 @@
 (defn text
   [field]
   [:div {:class (if (nil? (:class-name @field)) style/bootstrap-input-container-class (:class-name @field)) :key (str "container-" (:id @field))}
-   [:label {:for (:id @field) :class "col-sm-2 control-label" :key (str "label-" (:id @field))} (:label @field)]
+   [:label {:for (:id @field) :class "col-sm-3 control-label" :key (str "label-" (:id @field))} (:label @field)]
    [:div {:class (if (nil? (:size @field)) "col-sm-6" (str "col-sm-" (:size @field))) :key (str "divider-" (:id @field))}
     [:input {:class "form-control"
              :type (:type @field)
@@ -67,7 +67,7 @@
              :on-change #(update-value field (-> % .-target .-value) )
              :disabled (if (:disabled @field) "disabled" "")
              }]]
-   [:label {:class "col-sm-4 message-label" :key (str "message-" (:id @field))} (if (nil? (:message @field))
+   [:span {:class "help-inline control-label" :key (str "message-" (:id @field))} (if (nil? (:message @field))
              ""
              (:message @field))]])
 
@@ -225,7 +225,7 @@
 (defn button
   [form form-fields action-button]
   [:div {:class style/bootstrap-input-container-class}
-   [:div {:class "col-sm-offset-2 col-sm-6"}
+   [:div {:class "col-sm-offset-3 col-sm-6"}
     (if (= (:type @action-button) "button-group")
       (doall (map (partial button-field form form-fields) (:buttons @action-button)))
       (button-field form form-fields @action-button))]])
@@ -306,7 +306,7 @@
   [field]
   [:div {:class (if (nil? (:class-name @field)) style/bootstrap-input-container-class (:class-name @field))
          :key (str "container-" (:id @field))}
-   [:label {:for (:id @field) :class "col-sm-2 control-label"
+   [:label {:for (:id @field) :class "col-sm-3 control-label"
             :key (str "label-" (:id @field))} (:label @field)]
    [:div {:class "col-sm-6" :key (str "divider-container-" (:id @field))}
     [:select {:key (:id @field)
@@ -316,7 +316,43 @@
               :value (:value @field)
               :disabled (if (:disabled @field) "disabled" "")}
      (doall (map (partial select-option (:value @field)) (:options @field)))]]
-   [:label {:class "col-sm-4 message-label"
+   [:span {:class "inline-help control-label"
+            :key (str "label-message-" (:id @field))
+            } (if (nil? (:message @field))
+             ""
+             (:message @field))]])
+
+
+(defn update-select-range
+  [field key value]
+  (let [cursor (key @field)]
+    (reset! field (assoc @field key (assoc cursor :value value)))))
+
+
+(defn select-range
+  [field]
+  [:div {:class (if (nil? (:class-name @field)) style/bootstrap-input-container-class (:class-name @field))
+         :key (str "container-" (:id @field))}
+   [:label {:for (:id @field) :class "col-sm-3 control-label"
+            :key (str "label-" (:id @field))} (:label @field)]
+   [:div {:class "col-sm-2" :key (str "divider-container-1-" (:id @field))}
+    [:select {:key (:id @field)
+              :class "form-control"
+              :id (:id (:from @field))
+              :on-change #(update-select-range field :from (-> % .-target .-value) )
+              :value (:value (:from @field))
+              :disabled (if (:disabled (:from @field)) "disabled" "")}
+     (doall (map (partial select-option (:value (:to @field))) (:options (:from @field))))]]
+   [:div {:class "col-sm-2 text-center"} "To"]
+   [:div {:class "col-sm-2" :key (str "divider-container-2-" (:id @field))}
+    [:select {:key (:id (:to @field))
+              :class "form-control"
+              :id (:id (:to @field))
+              :on-change #(update-select-range field :to (-> % .-target .-value) )
+              :value (:value (:to @field))
+              :disabled (if (:disabled (:to @field)) "disabled" "")}
+     (doall (map (partial select-option (:value (:to @field))) (:options (:to @field))))]]
+   [:span {:class "inline-help control-label"
             :key (str "label-message-" (:id @field))
             } (if (nil? (:message @field))
              ""
@@ -482,14 +518,15 @@
     "description" (description field)
     "datepicker" (datepicker field)
     "markdown" (markdown-editor field)
-    "select-text" (select-text field)))
+    "select-text" (select-text field)
+    "select-range" (select-range field)))
 
 
 (defn form-aligned [form form-fields action-button]
   [:form {:class "form-horizontal"}
    [:legend [:h3 (:title @form)] [:span {:class "form-error"} (:message @form)]]
    (doall (map input-field form-fields))
-   [:div {:class "pure-controls"} (button form form-fields action-button)]])
+   [:div {:class "form-group"} (button form form-fields action-button)]])
 
 
 
