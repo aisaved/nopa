@@ -34,6 +34,11 @@
     true))
 
 
+(defn describe-malformed?
+  [params]
+  (not (and (valid-daily-params? params) (v/valid-number? (:pattern-length params)))))
+
+
 (defresource almanac-pattern-api []
   :available-media-types ["application/json"]
   :malformed? (fn [context]
@@ -42,6 +47,14 @@
                (response/liberator-json-response (query/pattern-query (get-in context [:request :params])))))
 
 
+(defresource almanac-pattern-describe []
+  :available-media-types ["application/json"]
+  :malformed? (fn [context]
+                (describe-malformed? (get-in context [:request :params])))
+  :handle-ok (fn [context]
+               (response/liberator-json-response (query/pattern-describe (get-in context [:request :params])))))
+
 
 (defroutes api-almanac-pattern-routes
-  (GET "/api/almanac/pattern" [] (almanac-pattern-api)))
+  (GET "/api/almanac/pattern" [] (almanac-pattern-api))
+  (GET "/api/almanac/pattern/describe" [] (almanac-pattern-describe)))
