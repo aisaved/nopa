@@ -14,9 +14,13 @@
                 (where [[= :date_id date-id]]))))
 
 
+(defn generate-daily-pattern-key
+  [params]
+  (str "d-" (:day params) "-" (:month params) "-"  (:pattern-length params)))
+
 (defn generate-daily-pattern-key-param
   [params]
-  [= :date_id (str "d-" (:day params) "-" (:month params) "-"  (:pattern-length params))])
+  [= :date_id (generate-daily-pattern-key params)])
 
 
 (defn generate-monthly-pattern-key-param
@@ -300,3 +304,13 @@
       "daily" (daily-pattern-query clean-params)
       "monthly" (monthly-pattern-query clean-params)
       "weekly" (weekly-pattern-query clean-params))))
+
+
+(defn pattern-describe
+  [raw-params]
+  (let [params (clean-daily-params raw-params)
+        pattern-length (:pattern-length params)
+        date-ids (map #(generate-daily-pattern-key (assoc params :pattern-length %)) (range 1 (+ 1 pattern-length)))]
+    (cql/select (conn/dbcon)
+                almanac-model/almanac-daily-table
+                (where [[:in :date_id date-ids] [= :symbol (:symbol params)]]))))
